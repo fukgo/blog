@@ -118,9 +118,9 @@ export default function Home() {
 
             {/* Modal */}
             {isModalOpen && (
-                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <div isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                     {modalMessage}
-                </Modal>
+                </div>
             )}
         </div>
     );
