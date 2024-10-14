@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { marked } from 'marked';
 import Link from 'next/link';
-import { FaUser, FaEnvelope } from 'react-icons/fa'; // Icons for user info
+import { FaUser, FaEnvelope } from 'react-icons/fa'; // 导入用户信息图标
+import highlight from 'highlight.js'; // 导入代码高亮库
+import 'highlight.js/styles/github.css'; // 高亮样式
+import 'github-markdown-css'; // GitHub Markdown 样式
 
 const PostDetail = ({ initialArticle, initialUser }) => {
     const router = useRouter();
@@ -14,9 +17,14 @@ const PostDetail = ({ initialArticle, initialUser }) => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        // 配置 marked 以支持 GitHub 风格的 Markdown 和代码高亮
         marked.setOptions({
-            gfm: true, // Enable GitHub flavored markdown
-            breaks: true, // Enable line breaks
+            gfm: true,
+            breaks: true,
+            highlight: (code, lang) => {
+                const language = lang || 'plaintext'; // 默认语言为 plaintext
+                return highlight.highlight(language, code).value; // 返回高亮后的代码
+            },
         });
 
         const fetchArticle = async () => {
@@ -24,37 +32,39 @@ const PostDetail = ({ initialArticle, initialUser }) => {
 
             try {
                 const articleResponse = await fetch(`http://127.0.0.1:8002/articles/detail/${id}`, {
-                    credentials: 'include'
+                    credentials: 'include',
                 });
                 if (!articleResponse.ok) throw new Error('Unable to fetch article information');
                 const articleData = await articleResponse.json();
                 setArticle(articleData);
 
                 const userResponse = await fetch(`http://127.0.0.1:8002/users/${articleData.user_id}`, {
-                    credentials: 'include'
+                    credentials: 'include',
                 });
                 if (!userResponse.ok) throw new Error('Unable to fetch user information');
                 const userData = await userResponse.json();
                 setUser(userData);
             } catch (error) {
-                setError(error.message);
+                setError(error.message); // 捕获并设置错误信息
             } finally {
-                setLoading(false);
+                setLoading(false); // 完成加载
             }
         };
 
-        if (!initialArticle || !initialUser) {
+        // 仅在 id 存在时请求数据
+        if (id) {
             fetchArticle();
         }
-    }, [id, initialArticle, initialUser]);
+    }, [id]); // 依赖 id
 
+    // 加载状态和错误处理
     if (loading) return <p>Loading...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
 
     return (
         <div className="container mx-auto p-6 max-w-4xl">
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                {/* Article Header with Author Info on the Right */}
+                {/* 文章标题和作者信息 */}
                 <div className="p-6 border-b flex justify-between items-start">
                     <div>
                         <h1 className="text-4xl font-bold text-gray-800 mb-2">{article.title}</h1>
@@ -77,7 +87,7 @@ const PostDetail = ({ initialArticle, initialUser }) => {
                     </div>
                 </div>
 
-                {/* Article Content */}
+                {/* 文章内容 */}
                 <div className="p-6">
                     {article.content ? (
                         <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: marked(article.content) }} />
@@ -87,7 +97,7 @@ const PostDetail = ({ initialArticle, initialUser }) => {
                 </div>
             </div>
 
-            {/* Back to Posts Button */}
+            {/* 返回文章列表按钮 */}
             <Link href="/" className="mt-6 inline-block text-blue-600 hover:underline text-lg">
                 ← Back to Posts
             </Link>
@@ -95,25 +105,26 @@ const PostDetail = ({ initialArticle, initialUser }) => {
     );
 };
 
+// 获取初始数据
 PostDetail.getInitialProps = async ({ query }) => {
     const { id } = query;
 
     try {
         const articleResponse = await fetch(`http://127.0.0.1:8002/articles/detail/${id}`, {
-            credentials: 'include'
+            credentials: 'include',
         });
         if (!articleResponse.ok) throw new Error('Unable to fetch article information');
         const articleData = await articleResponse.json();
 
         const userResponse = await fetch(`http://127.0.0.1:8002/users/${articleData.user_id}`, {
-            credentials: 'include'
+            credentials: 'include',
         });
         if (!userResponse.ok) throw new Error('Unable to fetch user information');
         const userData = await userResponse.json();
 
         return { initialArticle: articleData, initialUser: userData };
     } catch (error) {
-        return { initialArticle: null, initialUser: null };
+        return { initialArticle: null, initialUser: null }; // 出现错误时返回 null
     }
 };
 

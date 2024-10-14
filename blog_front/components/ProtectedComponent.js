@@ -1,3 +1,4 @@
+//ProtectedComponent.js
 import React, { useState, useEffect } from 'react';
 import useAuth from './useAuth';
 import Modal from './Modal';

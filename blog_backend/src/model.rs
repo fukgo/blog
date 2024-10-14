@@ -1,5 +1,5 @@
 use sqlx::{prelude::FromRow, MySqlPool};
-use std::sync::{Mutex, RwLock};
+use std::sync::Mutex;
 use serde::{Serialize,Deserialize};
 use chrono::Utc;
 #[derive(Debug)]

@@ -1,5 +1,4 @@
 use crate::model::*;
-use crate::utils::get_now_date;
 use crate::{error::AppError, model::AuthedUser};
 use sqlx::MySqlPool;
 use tracing::{debug, error, info};

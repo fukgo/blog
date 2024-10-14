@@ -3,7 +3,6 @@ use crate::model::AuthedUser;
 use reqwest::StatusCode;
 use reqwest::Client;
 use chrono::Datelike;
-use tokio::sync::mpsc::error;
 use tracing::{error,debug};
 pub async fn get_auth(
     token: &str,

@@ -1,22 +1,56 @@
-需要登录的 API
+#### 文章相关 API	/articles
 
-POST /users                # 创建新用户
-PUT /users                 # 更新当前用户信息
-DELETE /users/{userId}     # 删除当前用户
-DELETE /users/logout         # 用户退出登录
+- POST /articles/ 创建一篇文章
+- POST /articles/:article_id 更新指定 ID 的文章
+- GET  /articles/all?page={}?limit={} 获取所有文章
+- DELETE /articles/:article_id 删除指定 ID 的文章
+- GET /detail/:article_id   查询文章详情
 
-POST /users/{userId}/articles           # 创建文章
-PUT /users/{userId}/articles/{articleId} # 更新某篇文章
-POST /tags              # 创建标签
-DELETE /tags/{tagId}    # 删除标签
+#### 标签相关 API	/tag
 
-不需要登录的 API
+- POST /tags/  创建一个标签
+- DELETE /tags/:tag_id 删除指定 ID 的标签
+- GET /tags/all 获取所有标签
+- GET /tags/:tag_id/articles?page={}?limit={} 获取指定标签下的所有文章信息
 
-默认一页为10个文章,default page = 1
-GET /users                # 获取所有用户
-GET /users/{userId}       # 获取某个用户的信息
-GET /users/{userId}/articles?page=1  # 获取某个用户的所有文章标题信息（分页）
-GET /users/{userId}/articles/{articleId}  # 获取某篇文章
-GET /articles?title={title}&username={username}&page={1} # 根据标题和用户名搜索文章（分页）
-GET /tags                 # 获取所有标签
-GET /tags/{tagId}/articles?page=1  # 获取特定标签下的所有文章（分页）
+#### 用户相关 API	/users
+
+- GET /users 获取所有用户
+- GET  /users/:user_id 获取指定 ID 的用户
+- DELETE  /users/logout 用户登出
+- DELETE /users/:user_id 删除指定 ID 的用户
+- GET /users/:user_id/articles?page={}?limit={} 获取指定用户的所有文章详细
+
+#### 认证相关API 	/auth
+
+- GET /auth/token	验证token
+- GET /auth/session    验证session登录
+
+*除GET请求外都需要验证登录*
+
+auth模块
+
+POST /login
+
+```json
+{
+    "username",
+	"password"
+}
+```
+
+
+
+POST /register
+
+```json
+{
+    "username",
+    "email",
+	"password"
+}
+```
+
+GET host/
+
+验证请求头token

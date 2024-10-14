@@ -1,5 +1,3 @@
-// components/TagsList.js
-
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -12,7 +10,7 @@ const TagsList = () => {
     // Function to fetch tags from the API
     const fetchTags = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:8002/tags/all',{
+            const response = await axios.get('http://127.0.0.1:8002/tags/all', {
                 withCredentials: true
             });
             setTags(response.data); // Set the fetched tags
@@ -26,7 +24,7 @@ const TagsList = () => {
     // Function to delete a tag
     const deleteTag = async (tagId) => {
         try {
-            await axios.delete(`http://127.0.0.1:8002/tags/delete/${tagId}`,{
+            await axios.delete(`http://127.0.0.1:8002/tags/delete/${tagId}`, {
                 withCredentials: true
             });
             setTags(tags.filter(tag => tag.id !== tagId)); // Remove the deleted tag from the state
@@ -39,7 +37,7 @@ const TagsList = () => {
     const addTag = async (e) => {
         e.preventDefault();
         try {
-            await axios.get(`http://127.0.0.1:8002/tags/${newTag}`,{
+            await axios.get(`http://127.0.0.1:8002/tags/${newTag}`, {
                 withCredentials: true
             });
             fetchTags(); // Refresh the tags list
@@ -54,19 +52,15 @@ const TagsList = () => {
         fetchTags();
     }, []);
 
-    // Handle loading state
-    if (loading) {
-        return <div>Loading...</div>; // Display loading state
-    }
-
-    // Handle error state
-    if (error) {
-        return <div>Error fetching tags: {error.message}</div>; // Display error message
-    }
-
     return (
         <div className="container mx-auto p-6 max-w-4xl">
             <h1 className="text-4xl font-bold mb-4">Tags List</h1>
+
+            {/* Display loading state */}
+            {loading && <div>Loading...</div>}
+
+            {/* Display error state */}
+            {error && <div className="text-red-500">Error fetching tags: {error.message}</div>}
 
             {/* Form to add a new tag */}
             <form onSubmit={addTag} className="mb-4">

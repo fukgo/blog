@@ -41,6 +41,7 @@ export default function Layout({ children }) {
                 },
                 withCredentials: true
             });
+            console.log(response.data);
             setUsers(response.data); // Set the fetched users
         } catch (err) {
             setErrorUsers(err); // Handle error
@@ -114,11 +115,14 @@ export default function Layout({ children }) {
                         <h2 className="text-lg font-bold text-gray-900 mt-6 mb-4">Authors</h2>
                         <ul className="space-y-1">
                             {users.map((user) => (
-                                <Link key={user.id} href={`/users/${user.id}`} className="text-gray-600">
-                                    {user.username}
-                                </Link>
+                                <li key={user.id}>
+                                    <Link href={`/users/${user.id}`} className="text-gray-600 hover:text-gray-900">
+                                        {user.username}
+                                    </Link>
+                                </li>
                             ))}
                         </ul>
+
                     </div>
                 </aside>
 

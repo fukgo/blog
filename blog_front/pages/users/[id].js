@@ -19,16 +19,16 @@ const UserProfile = ({ initialUser, initialArticles }) => {
             if (!id) return;
 
             try {
-                const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`,{
-                    withCredentials: true
+                const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`, {
+                    credentials: 'include'
                 });
                 if (!userResponse.ok) throw new Error('Unable to fetch user information');
                 const userData = await userResponse.json();
                 setUser(userData);
 
-                const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=${page}&limit=${limit},{
-                withCredentials: true
-                }`);
+                const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=${page}&limit=${limit}`, {
+                    credentials: 'include'
+                });
                 if (!articlesResponse.ok) throw new Error('Unable to fetch user articles');
                 const articlesData = await articlesResponse.json();
                 setArticles(articlesData);
@@ -123,11 +123,15 @@ UserProfile.getInitialProps = async ({ query }) => {
     const { id } = query;
 
     try {
-        const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`);
+        const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`, {
+            credentials: 'include'
+        });
         if (!userResponse.ok) throw new Error('Unable to fetch user information');
         const userData = await userResponse.json();
 
-        const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=1&limit=10`);
+        const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=1&limit=10`, {
+            credentials: 'include'
+        });
         if (!articlesResponse.ok) throw new Error('Unable to fetch user articles');
         const articlesData = await articlesResponse.json();
 
