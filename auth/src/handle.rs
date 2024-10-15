@@ -99,6 +99,7 @@ pub async fn auth_token(
     app_state: State<Arc<AppState>>,
     req: Request<Body>,
 )->Result<impl IntoResponse, Err>{
+    debug!("receive request: {:?}", req);
     if let Some(auth_header) = req.headers().get("Authorization") {
         if let Ok(auth_str) = auth_header.to_str() {
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
@@ -117,16 +118,20 @@ pub async fn auth_token(
                     })?;
                 match user{
                     Some(user)=>{
+                        debug!("get user info success: {:?}", user);
                         return Ok((StatusCode::OK,Json(user)));
                     },
                     _=>{
+                        error!("User not found");
                         return Err(Err::TokenInvalid);
                     }
                 }
             }
         }
+        error!("Invalid Authorization header");
         return Err(Err::TokenInvalid);
     }
+    error!("Missing Authorization header");
     Err(Err::TokenInvalid)
 }
 pub async fn register_form(token: CsrfToken) -> impl IntoResponse {

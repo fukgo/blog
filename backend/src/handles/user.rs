@@ -80,7 +80,7 @@ pub async fn auth_user(
         if let Ok(auth_str) = auth_header.to_str() {
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
                 debug!("token: {}", token);
-                let user = get_auth(token, "http://localhost:8001/").await?;
+                let user = get_auth(token, "http://localhost:8001").await?;
                 // cookies.add(Cookie::new("user", user.username.clone()));
                 let res = session.insert("user", &user.username).await.map_err(|e|{
                     error!("session insert error: {:?}", e);

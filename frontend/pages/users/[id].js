@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import dayjs from 'dayjs';
+import { FaEnvelope, FaUser, FaCalendarAlt } from 'react-icons/fa';
 
 const UserProfile = ({ initialUser, initialArticles }) => {
     const router = useRouter();
@@ -48,10 +49,31 @@ const UserProfile = ({ initialUser, initialArticles }) => {
 
     return (
         <div className="container mx-auto p-4">
-            <div className="bg-white p-6 shadow-lg rounded-lg mb-8">
-                <h1 className="text-4xl font-bold mb-4">{user.username} 个人资料</h1>
-                <p className="text-lg"><strong>邮箱:</strong> {user.email}</p>
-                <p className="text-lg"><strong>简介:</strong> {user.bio || '暂无简介'}</p>
+            <div className="bg-white p-6 shadow-lg rounded-lg mb-8 flex flex-col md:flex-row items-center">
+                {/* 用户头像 */}
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 overflow-hidden mb-4 md:mb-0">
+                    <img
+                        src={`/default-avatar.png`} // 可以将用户头像的URL放置在这里
+                        alt={`${user.username}的头像`}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+
+                {/* 用户信息 */}
+                <div className="md:ml-6 text-center md:text-left">
+                    <h1 className="text-4xl font-bold mb-2">{user.username}</h1>
+                    <p className="text-lg mb-2 flex items-center">
+                        <FaEnvelope className="mr-2" /> {user.email}
+                    </p>
+                    {user.nickname && (
+                        <p className="text-lg mb-2 flex items-center">
+                            <FaUser className="mr-2" /> 昵称: {user.nickname}
+                        </p>
+                    )}
+                    <p className="text-lg flex items-center">
+                        <FaCalendarAlt className="mr-2" /> 创建时间: {dayjs(user.created_at).format('YYYY年M月D日')}
+                    </p>
+                </div>
             </div>
 
             <div>

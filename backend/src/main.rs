@@ -14,10 +14,10 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::{DefaultOnResponse, TraceLayer};
 use tracing::{info, error,debug,trace};
 use tower_sessions::{Expiry, MemoryStore,SessionManagerLayer};
-use blog_backend::model::AppState;
+use backend::model::AppState;
 use axum::middleware::from_fn_with_state;
-use blog_backend::middleware::require_login;
-use blog_backend::handles::{article::*, tag::*, user::*};
+use backend::middleware::require_login;
+use backend::handles::{article::*, tag::*, user::*};
 use reqwest::header::HeaderValue;
 #[tokio::main]
 async fn main(){
@@ -34,8 +34,8 @@ async fn main(){
 async fn run()->anyhow::Result<()>{
 
     let database_url = env::var("DATABASE_URL").with_context(||"database not set")?;
-    let addr = env::var("BIND_ADDR").with_context(||"bind_address not set")?;
-    let timemout = env::var("TIMEOUT").with_context(||"timeout not set")?;
+    let addr = env::var("BIND_ADDR").unwrap_or("0.0.0.0:8002".to_string());
+    let timemout = env::var("TIMEOUT").unwrap_or("2".to_string());
     // 创建 MySQL 连接池
     let pool = MySqlPoolOptions::new()
         .max_connections(5)

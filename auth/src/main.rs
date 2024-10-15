@@ -20,7 +20,9 @@ pub mod handle;
 pub mod error;
 pub mod model;
 pub mod middleware;
-use reqwest::StatusCode;
+use reqwest::header::HeaderValue;
+use reqwest::header::HeaderName;
+use reqwest::{Method, StatusCode};
 use handle::*;
 lazy_static! {
     pub static ref GLOBAL_PARAMS: Params= {
@@ -46,24 +48,23 @@ async fn main(){
     run().await.unwrap();
 }
 
-
 async fn run()->anyhow::Result<()>{
     let config = CsrfConfig::default();
     let database_url = env::var("DATABASE_URL").with_context(||"database not set")?;
-    let addr = env::var("BIND_ADDR").with_context(||"bind_address not set")?;
+    let addr = env::var("BIND_ADDR").unwrap_or("0.0.0.0:8001".to_string());
 
     // let static_files_service = ServeDir::new("static");
 
     // 创建 MySQL 连接池
     let pool = MySqlPoolOptions::new()
-        .max_connections(5)
+        .max_connections(3)
         .connect(&database_url)
         .await?;
     //配置cors
     let cors = CorsLayer::new()
-        .allow_methods(Any)
-        .allow_headers(Any)
-        .allow_origin(Any);
+    .allow_origin(HeaderValue::from_static("http://localhost:8001"))
+    .allow_methods([Method::GET, Method::POST,Method::DELETE])
+    .allow_headers(vec![HeaderName::from_static("content-type")]);
     let app_state = Arc::new(AppState {
         pool,
     });
