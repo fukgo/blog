@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 export default function Layout({ children }) {
-    const [tags, setTags] = useState([]); // State to store tags
-    const [users, setUsers] = useState([]); // State to store users
-    const [loadingTags, setLoadingTags] = useState(true); // Loading state for tags
-    const [loadingUsers, setLoadingUsers] = useState(true); // Loading state for users
-    const [errorTags, setErrorTags] = useState(null); // Error state for tags
-    const [errorUsers, setErrorUsers] = useState(null); // Error state for users
+    const [tags, setTags] = useState([]); // 存储标签的状态
+    const [users, setUsers] = useState([]); // 存储用户的状态
+    const [loadingTags, setLoadingTags] = useState(true); // 标签加载状态
+    const [loadingUsers, setLoadingUsers] = useState(true); // 用户加载状态
+    const [errorTags, setErrorTags] = useState(null); // 标签错误状态
+    const [errorUsers, setErrorUsers] = useState(null); // 用户错误状态
 
-    // Function to fetch tags from the API
+    // 从 API 获取标签的函数
     const fetchTags = async () => {
         try {
             const token = sessionStorage.getItem('authToken'); // 从 sessionStorage 获取 token
@@ -22,15 +22,15 @@ export default function Layout({ children }) {
                 },
                 withCredentials: true
             });
-            setTags(response.data); // Set the fetched tags
+            setTags(response.data); // 设置获取到的标签
         } catch (err) {
-            setErrorTags(err); // Handle error
+            setErrorTags(err); // 处理错误
         } finally {
-            setLoadingTags(false); // End loading
+            setLoadingTags(false); // 结束加载
         }
     };
 
-    // Function to fetch users from the API
+    // 从 API 获取用户的函数
     const fetchUsers = async () => {
         try {
             const token = sessionStorage.getItem('authToken'); // 从 sessionStorage 获取 token
@@ -42,65 +42,65 @@ export default function Layout({ children }) {
                 withCredentials: true
             });
             console.log(response.data);
-            setUsers(response.data); // Set the fetched users
+            setUsers(response.data); // 设置获取到的用户
         } catch (err) {
-            setErrorUsers(err); // Handle error
+            setErrorUsers(err); // 处理错误
         } finally {
-            setLoadingUsers(false); // End loading
+            setLoadingUsers(false); // 结束加载
         }
     };
 
-    // Fetch tags and users on component mount
+    // 组件挂载时获取标签和用户
     useEffect(() => {
         fetchTags();
         fetchUsers();
     }, []);
 
-    // Handle loading states
+    // 处理加载状态
     if (loadingTags || loadingUsers) {
-        return <div>Loading...</div>; // Display loading state
+        return <div>加载中...</div>; // 显示加载状态
     }
 
-    // Handle error states
+    // 处理错误状态
     if (errorTags) {
-        return <div>Error fetching tags: {errorTags.message}</div>; // Display error message
+        return <div>获取标签时出错: {errorTags.message}</div>; // 显示错误信息
     }
 
     if (errorUsers) {
-        return <div>Error fetching users: {errorUsers.message}</div>; // Display error message
+        return <div>获取用户时出错: {errorUsers.message}</div>; // 显示错误信息
     }
 
     return (
         <div className="min-h-screen flex flex-col">
             <Head>
-                <title>My Blog</title>
-                <meta name="description" content="A personal blog built with Next.js" />
+                <title>我的博客</title>
+                <meta name="description" content="一个使用 Next.js 构建的个人博客" />
             </Head>
 
-            {/* Header */}
+            {/* 头部 */}
             <header className="bg-white shadow-sm">
                 <div className="container mx-auto px-4 py-4">
                     <nav className="flex justify-between items-center">
-                        <Link href="/" className="text-2xl font-bold text-gray-900">My Blog</Link>
+                        <Link href="/" className="text-2xl font-bold text-gray-900">我的博客</Link>
                         <div className="space-x-4">
-                            <Link href="/" className="text-gray-700 hover:text-gray-900">About</Link>
-                            <Link href="/" className="text-gray-700 hover:text-gray-900">Blog</Link>
-                            <Link href="/" className="text-gray-700 hover:text-gray-900">Contact</Link>
+                            <Link href="/about" className="text-gray-700 hover:text-gray-900">关于</Link>
+                            <Link href="/" className="text-gray-700 hover:text-gray-900">博客</Link>
+                            {/* <Link href="/" className="text-gray-700 hover:text-gray-900">联系</Link> */}
 
-                            {/* Add new article/tag buttons */}
-                            <Link href="/posts/new" className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">New Article</Link>
-                            <Link href="/tags/new" className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">New Tag</Link>
+                            {/* 添加新文章/标签按钮 */}
+                            <Link href="/posts/new" className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">新文章</Link>
+                            <Link href="/tags/new" className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">新标签</Link>
                         </div>
                     </nav>
                 </div>
             </header>
 
-            {/* Main Content */}
+            {/* 主内容 */}
             <div className="flex flex-grow container mx-auto px-4 py-6">
-                {/* Sidebar */}
+                {/* 侧边栏 */}
                 <aside className="w-64 bg-gray-50 border-r hidden lg:block">
                     <div className="p-6">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">Tags</h2>
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">标签</h2>
                         <ul className="space-y-2">
                             {tags.map((tag) => (
                                 <li key={tag.id}>
@@ -111,8 +111,8 @@ export default function Layout({ children }) {
                             ))}
                         </ul>
 
-                        {/* Authors Section */}
-                        <h2 className="text-lg font-bold text-gray-900 mt-6 mb-4">Authors</h2>
+                        {/* 作者部分 */}
+                        <h2 className="text-lg font-bold text-gray-900 mt-6 mb-4">作者</h2>
                         <ul className="space-y-1">
                             {users.map((user) => (
                                 <li key={user.id}>
@@ -126,16 +126,16 @@ export default function Layout({ children }) {
                     </div>
                 </aside>
 
-                {/* Main Content Area */}
+                {/* 主内容区域 */}
                 <main className="flex-grow bg-white p-6 shadow-sm">
                     {children}
                 </main>
             </div>
 
-            {/* Footer */}
+            {/* 页脚 */}
             <footer className="bg-white border-t py-4">
                 <div className="container mx-auto text-center text-gray-500">
-                    © 2024 My Blog - All Rights Reserved
+                    © 2024 the blog - All rights reserved
                 </div>
             </footer>
         </div>

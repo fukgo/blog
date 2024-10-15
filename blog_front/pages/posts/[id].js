@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { marked } from 'marked';
 import Link from 'next/link';
-import { FaUser, FaEnvelope } from 'react-icons/fa'; // 导入用户信息图标
-import highlight from 'highlight.js'; // 导入代码高亮库
+import { FaUser, FaEnvelope } from 'react-icons/fa';
+import hljs from 'highlight.js'; // 导入代码高亮库
 import 'highlight.js/styles/github.css'; // 高亮样式
 import 'github-markdown-css'; // GitHub Markdown 样式
 
@@ -23,7 +23,7 @@ const PostDetail = ({ initialArticle, initialUser }) => {
             breaks: true,
             highlight: (code, lang) => {
                 const language = lang || 'plaintext'; // 默认语言为 plaintext
-                return highlight.highlight(language, code).value; // 返回高亮后的代码
+                return hljs.highlight(language, code).value; // 返回高亮后的代码
             },
         });
 
@@ -88,9 +88,9 @@ const PostDetail = ({ initialArticle, initialUser }) => {
                 </div>
 
                 {/* 文章内容 */}
-                <div className="p-6">
+                <div className="p-6 bg-gray-50"> {/* 设置浅色背景 */}
                     {article.content ? (
-                        <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: marked(article.content) }} />
+                        <div className="markdown-body prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: marked(article.content) }} />
                     ) : (
                         <p className="text-gray-500">This article has no content.</p>
                     )}

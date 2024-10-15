@@ -1,16 +1,16 @@
 use std::env;
 use std::sync::Arc;
-use anyhow::Context;
+use anyhow::{Context, Ok};
 use axum::body::Body;
 use axum::extract::Request;
 use axum::Router;
-use axum::routing::{post,get};
+use axum::routing::{get, get_service, post};
 use dotenv::dotenv;
 use sqlx::mysql::MySqlPoolOptions;
-
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::{DefaultOnResponse, TraceLayer};
 use tracing_subscriber::{self, fmt::format};
+use tower_http::services::ServeDir;
 use tracing::{info, error,debug,trace};
 use lazy_static::lazy_static;
 use crate::model::*;
@@ -20,7 +20,7 @@ pub mod handle;
 pub mod error;
 pub mod model;
 pub mod middleware;
-
+use reqwest::StatusCode;
 use handle::*;
 lazy_static! {
     pub static ref GLOBAL_PARAMS: Params= {
@@ -52,6 +52,8 @@ async fn run()->anyhow::Result<()>{
     let database_url = env::var("DATABASE_URL").with_context(||"database not set")?;
     let addr = env::var("BIND_ADDR").with_context(||"bind_address not set")?;
 
+    // let static_files_service = ServeDir::new("static");
+
     // 创建 MySQL 连接池
     let pool = MySqlPoolOptions::new()
         .max_connections(5)
@@ -68,13 +70,15 @@ async fn run()->anyhow::Result<()>{
     info!("Server is running on: {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
-
     let app = Router::new()
+
+        // 静态文件处理
         // .route("/login",post(login))
         // .route("/register",post(register))
         .route("/auth/login", get(login_form).post(handle_login_form))
         .route("/auth/register", get(register_form).post(handle_register_form))
         .route("/",get(auth_token))
+
         .layer(CsrfLayer::new(config))
         .layer(cors)
         .layer(TraceLayer::new_for_http()

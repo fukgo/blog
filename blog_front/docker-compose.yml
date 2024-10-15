@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  app:
+    image: blog_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production  # 确保环境变量设置为生产
+    command: npm start  # 启动生产环境
+    volumes:
+      - .:/app  # 将当前目录挂载到容器中的 /app 目录

@@ -20,6 +20,8 @@
 - DELETE  /users/logout 用户登出
 - DELETE /users/:user_id 删除指定 ID 的用户
 - GET /users/:user_id/articles?page={}?limit={} 获取指定用户的所有文章详细
+- GET /users/:user_id/resume获取用户resume
+- POST /users/:user_id/resume更新或上传resume
 
 #### 认证相关API 	/auth
 

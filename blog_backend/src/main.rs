@@ -43,7 +43,7 @@ async fn run()->anyhow::Result<()>{
         .await?;
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_same_site(SameSite::None)
+        .with_same_site(SameSite::None)// 在生产环境中应保持为 true，以确保 Cookie 只能通过 HTTPS 发送
         .with_secure(true)
         .with_http_only(true)
         .with_expiry(Expiry::OnInactivity(tower_sessions::cookie::time::Duration::hours(timemout.parse::<i64>().unwrap())));
@@ -83,7 +83,9 @@ async fn run()->anyhow::Result<()>{
         .route("/:user_id", get(get_user_by_id))
         .route("/logout", delete(delete_user_logout).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/:user_id", delete(delete_user).layer(from_fn_with_state(app_state.clone(),require_login)))
-        .route("/:user_id/articles", get(get_user_article));
+        .route("/:user_id/articles", get(get_user_article))
+        .route("/:user_id/resume", get(get_user_resume))
+        .route("/:user_id/resume", post(post_resume).layer(from_fn_with_state(app_state.clone(),require_login)));
 
     let auth_route = Router::new()
         .route("/token", get(auth_user))

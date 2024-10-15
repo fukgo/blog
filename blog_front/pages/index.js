@@ -6,8 +6,8 @@ import Modal from '../components/Modal';
 export default function Home() {
     const [page, setPage] = useState(1); // 当前页码
     const [limit, setLimit] = useState(10); // 每页文章数量
-    const [modalMessage, setModalMessage] = useState(null); // Modal message
-    const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+    const [modalMessage, setModalMessage] = useState(null); // 模态框消息
+    const [isModalOpen, setIsModalOpen] = useState(false); // 模态框状态
 
     useEffect(() => {
         // 获取 URL 查询参数
@@ -25,15 +25,15 @@ export default function Home() {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
-                credentials: 'include' // This ensures cookies are sent and received
+                credentials: 'include' // 确保发送和接收 cookies
             })
                 .then(response => {
                     if (response.status === 200) {
-                        console.log('Login successful');
-                        setModalMessage('Login successful');
+                        console.log('登录成功');
+                        setModalMessage('登录成功');
                     } else {
-                        console.log('Login failed');
-                        setModalMessage('Login failed');
+                        console.log('登录失败');
+                        setModalMessage('登录失败');
                     }
                     setIsModalOpen(true);
                     setTimeout(() => {
@@ -41,7 +41,7 @@ export default function Home() {
                     }, 3000);
                 })
                 .catch(() => {
-                    setModalMessage('Login failed');
+                    setModalMessage('登录失败');
                     setIsModalOpen(true);
                     setTimeout(() => {
                         setIsModalOpen(false);
@@ -53,27 +53,27 @@ export default function Home() {
     return (
         <div>
             <Head>
-                <title>My Blog - Home</title>
-                <meta name="description" content="Welcome to my blog where I share knowledge about web development, programming, and more." />
+                <title>我的博客 - 首页</title>
+                <meta name="description" content="欢迎来到我的博客，在这里我分享关于 Web 开发、编程等方面的知识。" />
             </Head>
 
-            {/* Hero Section */}
+            {/* 头部区域 */}
             <section className="bg-gradient-to-r from-blue-500 to-green-500 py-20 text-center text-white">
                 <div className="container mx-auto">
-                    <h1 className="text-5xl font-extrabold mb-4">Welcome to My Blog</h1>
-                    <p className="text-lg">Sharing knowledge about web development, programming, and more.</p>
+                    <h1 className="text-5xl font-extrabold mb-4">欢迎来到博客</h1>
+                    <p className="text-lg">分享关于 Web 开发、编程等方面的知识。</p>
                 </div>
             </section>
 
-            {/* Featured Posts Section */}
+            {/* 精选文章区域 */}
             <section className="py-12 bg-gray-50">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold mb-6 text-center">Featured Posts</h2>
+                    <h2 className="text-3xl font-bold mb-6 text-center">最近文章</h2>
 
-                    {/* Pagination controls and items per page */}
+                    {/* 分页控制和每页项目数 */}
                     <div className="flex justify-center mb-6">
                         <label className="mr-4 text-lg">
-                            Items per page:
+                            每页项目数:
                             <select
                                 value={limit}
                                 onChange={(e) => setLimit(Number(e.target.value))}
@@ -86,7 +86,7 @@ export default function Home() {
                         </label>
                     </div>
 
-                    {/* Article List */}
+                    {/* 文章列表 */}
                     <ArticleList
                         url="http://127.0.0.1:8002/articles/all"
                         page={page}
@@ -96,27 +96,26 @@ export default function Home() {
                         token={sessionStorage.getItem('authToken')} // 传递 token
                     />
 
-                    {/* Pagination buttons */}
-                    <div className="flex justify-center mt-6">
+                    {/* <div className="flex justify-center mt-6">
                         <button
                             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                             disabled={page === 1}
                             className={`px-4 py-2 mr-2 ${page === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded`}>
-                            Previous
+                            上一页
                         </button>
                         <button
                             onClick={() => setPage((prev) => prev + 1)}
                             className="px-4 py-2 bg-blue-500 text-white rounded">
-                            Next
+                            下一页
                         </button>
                     </div>
 
-                    {/* Current page info */}
-                    <p className="text-center mt-2">Current page: {page}</p>
+                    
+                    <p className="text-center mt-2">当前页: {page}</p> */}
                 </div>
             </section>
 
-            {/* Modal */}
+            {/* 模态框 */}
             {isModalOpen && (
                 <div isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                     {modalMessage}

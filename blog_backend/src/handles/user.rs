@@ -122,3 +122,32 @@ pub async fn is_login(
         return Err(AppError::UserUnLogin);
     }
 }
+
+pub async fn get_user_resume(
+    app_state: State<Arc<AppState>>,
+    session: Session,
+    Path(user_id): Path<i64>
+)->Result<impl IntoResponse,AppError>{
+    // let user_username_option = session.get::<String>("user").await.map_err({
+    //     |e| {
+    //         error!("session get error: {:?}", e);
+    //         AppError::InternalError
+    //     }
+    // })?;
+    let resume = get_resume_by_userid_db(&app_state.pool, user_id).await?;
+    Ok((StatusCode::OK,Json(resume)))
+}
+#[axum::debug_handler]
+pub async fn post_resume(
+    app_state: State<Arc<AppState>>,
+    session: Session,
+    Path(user_id): Path<i64>,
+    Json(resume): Json<ResumeCreate>,
+
+
+)->Result<impl IntoResponse,AppError>{
+    let _ = save_or_update_resume_db(&app_state.pool, &resume,user_id).await?;
+    Ok(StatusCode::OK)
+}
+
+

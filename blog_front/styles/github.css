@@ -1,14 +1,27 @@
-/*!
-  Theme: GitHub
-  Description: Light theme as seen on github.com
-  Author: github.com
-  Maintainer: @Hirse
-  Updated: 2021-05-15
+/* styles/globals.css */
 
-  Outdated base version: https://github.com/primer/github-syntax-light
-  Current colors taken from GitHub's CSS
-*/
+/* 导入字体 */
+@import url('/pages/fonts/GeistMonoVF.woff');
 
+/* 全局样式 */
+body {
+    font-family: 'Roboto', sans-serif; /* 设置全局字体 */
+    background-color: #f9f9f9; /* 设置全局背景颜色 */
+    color: #333; /* 设置全局文本颜色 */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Georgia', serif; /* 设置标题字体 */
+}
+
+p, a, span, div {
+    font-family: 'Roboto', sans-serif; /* 设置段落、链接、span 和 div 的字体 */
+}
+
+/* 代码高亮样式 */
 .hljs {
   color: #24292e;
   background: #ffffff;

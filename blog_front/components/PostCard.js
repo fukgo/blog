@@ -7,7 +7,7 @@ const PostCard = ({ post }) => {
             <h3 className="text-xl font-bold">{post.title}</h3>
             <p className="text-gray-700">{post.digest}</p>
             <Link href={`/posts/${post.id}`} legacyBehavior>
-                <a className="text-blue-500 hover:underline">Read more</a>
+                <a className="text-blue-500 hover:underline">了解详细</a>
             </Link>
         </div>
     );

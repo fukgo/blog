@@ -22,14 +22,14 @@ const UserProfile = ({ initialUser, initialArticles }) => {
                 const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`, {
                     credentials: 'include'
                 });
-                if (!userResponse.ok) throw new Error('Unable to fetch user information');
+                if (!userResponse.ok) throw new Error('无法获取用户信息');
                 const userData = await userResponse.json();
                 setUser(userData);
 
                 const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=${page}&limit=${limit}`, {
                     credentials: 'include'
                 });
-                if (!articlesResponse.ok) throw new Error('Unable to fetch user articles');
+                if (!articlesResponse.ok) throw new Error('无法获取用户文章');
                 const articlesData = await articlesResponse.json();
                 setArticles(articlesData);
                 setTotalPages(articlesData[0]?.total_page || 1);
@@ -43,22 +43,22 @@ const UserProfile = ({ initialUser, initialArticles }) => {
         fetchUserData();
     }, [id, page, limit]);
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <p>加载中...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
 
     return (
         <div className="container mx-auto p-4">
             <div className="bg-white p-6 shadow-lg rounded-lg mb-8">
-                <h1 className="text-4xl font-bold mb-4">{user.username} Profile</h1>
-                <p className="text-lg"><strong>Email:</strong> {user.email}</p>
-                <p className="text-lg"><strong>Bio:</strong> {user.bio || 'No bio available'}</p>
+                <h1 className="text-4xl font-bold mb-4">{user.username} 个人资料</h1>
+                <p className="text-lg"><strong>邮箱:</strong> {user.email}</p>
+                <p className="text-lg"><strong>简介:</strong> {user.bio || '暂无简介'}</p>
             </div>
 
             <div>
-                <h2 className="text-3xl font-bold mb-6">Published Articles</h2>
+                <h2 className="text-3xl font-bold mb-6">已发布的文章</h2>
                 <div className="flex justify-center mb-6">
                     <label className="mr-4 text-lg">
-                        Items per page:
+                        每页项目数:
                         <select
                             value={limit}
                             onChange={(e) => setLimit(Number(e.target.value))}
@@ -82,38 +82,38 @@ const UserProfile = ({ initialUser, initialArticles }) => {
                                         {article.title}
                                     </h3>
                                     <p className="text-sm text-gray-500 mt-2">
-                                        <strong>Published on:</strong> {dayjs(article.created_at).format('MMMM D, YYYY')}
+                                        <strong>发布时间:</strong> {dayjs(article.created_at).format('YYYY年M月D日')}
                                     </p>
                                     <p className="text-sm text-gray-500">
-                                        <strong>Updated on:</strong> {dayjs(article.updated_at).format('MMMM D, YYYY')}
+                                        <strong>更新时间:</strong> {dayjs(article.updated_at).format('YYYY年M月D日')}
                                     </p>
                                     <p className="mt-4 text-gray-700">
-                                        {article.summary || 'No summary available'}
+                                        {article.summary || '暂无摘要'}
                                     </p>
                                     <p className="mt-4 text-sm text-gray-500">
-                                        <strong>Theme:</strong> {article.theme || 'N/A'}
+                                        <strong>主题:</strong> {article.theme || '无'}
                                     </p>
                                 </Link>
                             </li>
                         ))}
                     </ul>
                 ) : (
-                    <p>This user has not published any articles yet.</p>
+                    <p>该用户尚未发布任何文章。</p>
                 )}
                 <div className="flex justify-center mt-6">
                     <button
                         onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                         disabled={page === 1}
                         className={`px-4 py-2 mr-2 ${page === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded`}>
-                        Previous
+                        上一页
                     </button>
                     <button
                         onClick={() => setPage((prev) => prev + 1)}
                         className="px-4 py-2 bg-blue-500 text-white rounded">
-                        Next
+                        下一页
                     </button>
                 </div>
-                <p className="text-center mt-2">Current page: {page} / {totalPages}</p>
+                <p className="text-center mt-2">当前页: {page} / {totalPages}</p>
             </div>
         </div>
     );
@@ -126,13 +126,13 @@ UserProfile.getInitialProps = async ({ query }) => {
         const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`, {
             credentials: 'include'
         });
-        if (!userResponse.ok) throw new Error('Unable to fetch user information');
+        if (!userResponse.ok) throw new Error('无法获取用户信息');
         const userData = await userResponse.json();
 
         const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=1&limit=10`, {
             credentials: 'include'
         });
-        if (!articlesResponse.ok) throw new Error('Unable to fetch user articles');
+        if (!articlesResponse.ok) throw new Error('无法获取用户文章');
         const articlesData = await articlesResponse.json();
 
         return { initialUser: userData, initialArticles: articlesData };

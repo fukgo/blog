@@ -105,3 +105,17 @@ pub struct BlogTag{
     pub blog_id: i64,
     pub tag_id: i64,
 }
+
+#[derive(Debug, Serialize, Deserialize,Clone,FromRow)]
+pub struct Resume{
+    pub id: i64,
+    pub user_id: i64,
+    pub content: String,
+}
+
+#[derive(Debug, Serialize, Deserialize,Clone)]
+pub struct ResumeCreate{
+    pub user_id: i64,
+    pub content: String,
+}
+

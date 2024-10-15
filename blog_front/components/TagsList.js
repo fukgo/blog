@@ -54,13 +54,13 @@ const TagsList = () => {
 
     return (
         <div className="container mx-auto p-6 max-w-4xl">
-            <h1 className="text-4xl font-bold mb-4">Tags List</h1>
+            <h1 className="text-4xl font-bold mb-4">标签列表</h1>
 
             {/* Display loading state */}
             {loading && <div>Loading...</div>}
 
             {/* Display error state */}
-            {error && <div className="text-red-500">Error fetching tags: {error.message}</div>}
+            {error && <div className="text-red-500">错误: {error.message}</div>}
 
             {/* Form to add a new tag */}
             <form onSubmit={addTag} className="mb-4">
@@ -72,7 +72,7 @@ const TagsList = () => {
                     onChange={(e) => setNewTag(e.target.value)}
                     required
                 />
-                <button className="bg-blue-500 text-white px-4 py-2 rounded">Add Tag</button>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded">增加标签</button>
             </form>
 
             {/* Display the list of tags */}
@@ -84,7 +84,7 @@ const TagsList = () => {
                             onClick={() => deleteTag(tag.id)}
                             className="bg-red-500 text-white px-2 py-1 rounded"
                         >
-                            Delete
+                            删除
                         </button>
                     </li>
                 ))}

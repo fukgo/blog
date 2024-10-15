@@ -1,4 +1,14 @@
-
+create database blog;
+create database auth;
+use auth;
+CREATE table auth_user(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(20) NOT NULL UNIQUE ,
+    password VARCHAR(20) UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 use blog;
 SET GLOBAL event_scheduler = ON;
 
@@ -64,4 +74,4 @@ create table resume(
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     content text not null
-)
+);

@@ -1,0 +1,29 @@
+# 忽略 node_modules 目录
+node_modules
+
+# 忽略日志文件
+npm-debug.log
+yarn-error.log
+
+# 忽略 Git 版本控制目录
+.git
+
+# 忽略环境变量文件
+.env
+
+# 忽略 Docker 配置文件
+Dockerfile
+.dockerignore
+
+# 忽略本地构建的产物
+dist
+build
+
+# 忽略测试覆盖率报告目录
+coverage
+
+# 忽略 Markdown 文档文件
+*.md
+
+# 忽略日志文件
+*.log
