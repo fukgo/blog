@@ -25,18 +25,7 @@ use reqwest::header::HeaderName;
 use reqwest::{Method, StatusCode};
 use handle::*;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
-lazy_static! {
-    pub static ref GLOBAL_PARAMS: Params= {
-        dotenv().ok(); // 加载 .env 文件
-        let secret_key: String = std::fs::read_to_string("key").expect("Failed to read the key file");
-        let timeout_hour = env::var("TOKEN_TIMEOUT").unwrap_or_else(|_| "2".to_string());
-        let timout_seconds = timeout_hour.parse::<u64>().with_context(|| "timeout set error").expect("timeout invalid") * 3600;
-        Params{
-            key:secret_key,
-            timeout:timout_seconds
-        }
-    };
-}
+
 
 #[tokio::main]
 async fn main(){

@@ -2,7 +2,7 @@ use crate::auth::{generate_token, verify_token};
 use crate::error::Err;
 use crate::model::*;
 use crate::AppState;
-use crate::GLOBAL_PARAMS;
+
 use axum::body::Body;
 use axum::extract::State;
 use axum::http::{Request, StatusCode};
@@ -36,9 +36,9 @@ pub async fn login(
     match bcrypt::verify(&login_data.password, &user.password) {
         Ok(valid) => {
             if valid {
-                let params = &*GLOBAL_PARAMS;
+                let key = std::env::var("KEY").unwrap_or_else(|_| "keynotset".to_string());
 
-                let token = generate_token(&user.username, &params.key).await?;
+                let token = generate_token(&user.username, &key).await?;
 
                 let res = LoginResponse { token };
                 Ok((StatusCode::OK, Json(res)))
@@ -109,8 +109,9 @@ pub async fn auth_token(
     if let Some(auth_header) = req.headers().get("Authorization") {
         if let Ok(auth_str) = auth_header.to_str() {
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
-                let params = &*GLOBAL_PARAMS;
-                let username = verify_token(&token, &params.key, params.timeout)
+                let key = std::env::var("KEY").unwrap_or_else(|_| "keynotset".to_string());
+                let timeout = std::env::var("TOKEN_TIMEOUT").unwrap_or_else(|_|"2".to_string()).parse::<u64>().unwrap();
+                let username = verify_token(&token, &key, timeout)
                     .await
                     .map_err(|e| {
                         error!("{:?}", e);
@@ -196,8 +197,8 @@ pub async fn handle_login_form(
         match bcrypt::verify(&login_data.password, &user.password) {
             Ok(valid) => {
                 if valid {
-                    let params = &*GLOBAL_PARAMS;
-                    let token = generate_token(&user.username, &params.key).await?;
+                    let key = std::env::var("KEY").unwrap_or_else(|_| "keynotset".to_string());
+                    let token = generate_token(&user.username, &key).await?;
 
                     if let Some(redirect) = login_data.redirect {
                         let redirect_url = if redirect.starts_with("http://") || redirect.starts_with("https://") {
