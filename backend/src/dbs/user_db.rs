@@ -222,4 +222,40 @@ pub async fn save_or_update_resume_db(
         }
     }
 }
+pub async fn update_user_db(
+    pool: &MySqlPool,
+    user: &UserUpdate,
+    user_id:i64
+)->Result<(), AppError>{
+    let mut query = "UPDATE user_table SET ".to_string();
+    let mut updates = Vec::new();
+    if let Some(ref nickname) = user.nickname {
+        updates.push("nickname = ?".to_string());
+    }
+    //todo!
+    // 检查是否有任何字段需要更新
+    if updates.is_empty() {
+        debug!("No fields to update for article_id: {}", user_id);
+        return Ok(()); // 没有字段需要更新，直接返回成功
+    }
+    query += &updates.join(", "); // 以逗号连接各个更新片段
+    query += " WHERE id = ?"; // 添加条件
+    let mut sql_query = sqlx::query(&query); // 使用不同的变量名
+    if let Some(ref nickname) = user.nickname {
+        sql_query = sql_query.bind(nickname);
+    }
+    sql_query = sql_query.bind(user_id);
+    let res = sql_query.execute(pool).await;
+
+    match res {
+        Ok(_) => {
+            debug!("user update success");
+            Ok(())
+        }
+        Err(e) => {
+            error!("update article failed: {:?}", e);
+            Err(AppError::InternalError)
+        }
+    }
+}
 

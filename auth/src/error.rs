@@ -18,7 +18,9 @@ pub enum Err {
     TokenExpired,
     RequestNotFound,
     DataBaseError,
-    InvalidCsrfToken
+    InvalidCsrfToken,
+    AccessError
+
 }
 
 // 为每个错误提供状态码和消息
@@ -36,6 +38,7 @@ impl Err {
             Err::RequestNotFound => StatusCode::NOT_FOUND,
             Err::DataBaseError => StatusCode::INTERNAL_SERVER_ERROR,
             Err::InvalidCsrfToken => StatusCode::FORBIDDEN,
+            Err::AccessError=>StatusCode::FORBIDDEN
         }
     }
 
@@ -52,6 +55,7 @@ impl Err {
             Err::RequestNotFound => "Request not found".to_string(),
             Err::DataBaseError => "Database error".to_string(),
             Err::InvalidCsrfToken => "Invalid CSRF token".to_string(),
+            Err::AccessError => "access error".to_string(),
         }
     }
 }

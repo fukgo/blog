@@ -36,6 +36,7 @@ pub enum AppError {
     RequestNotFound,
     #[error("Nickname already exist")]
     NicknameExist,
+
     
 }
 

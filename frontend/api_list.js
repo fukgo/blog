@@ -1,0 +1,22 @@
+export const apiDomain = 'http://127.0.0.1:8002/api';
+export const authDomain = 'http://127.0.0.1:8001';
+export const localDomain = 'http://127.0.0.1:3000';
+export const authTokenUrl = () => `${apiDomain}/auth/token`;
+export const loginUrl = () => `${authDomain}/auth/login?redirect=${localDomain}`;
+export const deleteUserUrl = (userId) => `${apiDomain}/users/${userId}`;
+export const logoutUrl = () => `${apiDomain}/users/logout`;
+export const createArticleUrl = () => `${apiDomain}/articles`;
+export const updateArticleUrl = (userId, articleId) => `${apiDomain}/users/${userId}/articles/${articleId}`;
+export const getArticleDetailUrl = (articleId) => `${apiDomain}/articles/detail/${articleId}`;
+export const createTagUrl = (tagName) => `${apiDomain}/${tagName}`;
+export const deleteTagUrl = (tagId) => `${apiDomain}/tags/${tagId}`;
+export const getAllUsersUrl = () => `${apiDomain}/users`;
+export const getUserUrl = (userId) => `${apiDomain}/users/${userId}`;
+export const getUserArticlesUrl = (userId, page ,limit) => `${apiDomain}/users/${userId}/articles?page=${page}&limit=${limit}`;
+export const getAllArticleUrl = () => `${apiDomain}/articles/all`;
+export const searchArticlesUrl = (title, username, page = 1) => `${apiDomain}/articles?title=${title}&username=${username}&page=${page}`;
+export const getAllTagsUrl = () => `${apiDomain}/tags/all`;
+export const getTagArticlesUrl = (tagId, page) => `${apiDomain}/tags/${tagId}/articles?page=${page}`;
+export const getAuthUserSessionUrl = () => `${apiDomain}/auth/session`;
+//更新用户信息
+export const updateUserUrl = (userId) => `${apiDomain}/users/${userId}/update`;

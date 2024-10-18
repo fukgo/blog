@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from './useAuth';
 import Modal from './Modal';
+import {authTokenUrl, loginUrl} from "@/api_list";
 
 const ParentComponent = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
@@ -13,8 +14,9 @@ const ParentComponent = ({ children }) => {
     };
 
     const handleLogin = () => {
-        const redirectUrl = encodeURIComponent(localStorage.getItem('redirect_url'));
-        window.location.href = `http://127.0.0.1:8001/auth/login?redirect=${redirectUrl}`;
+        // const redirectUrl = encodeURIComponent(localStorage.getItem('redirect_url'));
+        const currentDomain = window.location.origin;
+        window.location.href = loginUrl();
     };
 
     useEffect(() => {

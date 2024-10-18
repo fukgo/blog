@@ -41,7 +41,7 @@ pub async fn get_articles_info(
 }
 
 
-pub async fn geget_article_detail(
+pub async fn get_article_detail(
     app_state: State<Arc<AppState>>,
     Path(article_id): Path<i64>,
 ) -> Result<impl IntoResponse, AppError> {

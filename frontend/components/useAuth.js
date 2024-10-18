@@ -1,6 +1,7 @@
 // useAuth.js
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import {getAuthUserSessionUrl} from "@/api_list";
 
 const useAuth = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(null); // 初始状态为 null
@@ -9,7 +10,7 @@ const useAuth = () => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8002/auth/session',{
+                const response = await axios.get(getAuthUserSessionUrl(),{
                     withCredentials: true
                 });
                 if (response.status === 200) {

@@ -2,12 +2,14 @@
 import PostCard from './PostCard';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import {getAllArticleUrl} from "@/api_list";
 
-const ArticleList = ({ url, page, limit, setPage, setLimit }) => {
+const ArticleList = ({  page, limit, setPage, setLimit }) => {
     const [posts, setPosts] = useState([]); // 存储文章数据
     const [loading, setLoading] = useState(true); // 加载状态
     const [error, setError] = useState(null); // 错误状态
     const [totalPages, setTotalPages] = useState(1); // 总页数
+    const url = getAllArticleUrl(); // 获取文章列表的 URL
 
     // 数据获取函数
     const fetchArticles = async () => {

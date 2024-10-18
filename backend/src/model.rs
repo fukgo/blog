@@ -27,6 +27,12 @@ pub struct User{
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
 }
+#[derive(Debug, Serialize, Deserialize,Clone)]
+pub struct UserUpdate{
+    pub nickname: Option<String>,
+}
+
+
 
 #[derive(Debug, Serialize, Deserialize,Clone,FromRow)]
 pub struct Tag{

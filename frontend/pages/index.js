@@ -2,6 +2,7 @@ import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import ArticleList from '../components/ArticleList';
 import Modal from '../components/Modal';
+import {authTokenUrl, getAllArticleUrl} from "@/api_list";
 
 export default function Home() {
     const [page, setPage] = useState(1); // 当前页码
@@ -20,7 +21,7 @@ export default function Home() {
             sessionStorage.setItem('authToken', token);
 
             // 将 token 添加到 header，向 http://127.0.0.1:8002/auth/token 发送 GET 请求验证 token
-            fetch('http://127.0.0.1:8002/auth/token', {
+            fetch(authTokenUrl(), {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -88,7 +89,6 @@ export default function Home() {
 
                     {/* 文章列表 */}
                     <ArticleList
-                        url="http://127.0.0.1:8002/articles/all"
                         page={page}
                         limit={limit}
                         setPage={setPage}
@@ -96,22 +96,7 @@ export default function Home() {
                         token={sessionStorage.getItem('authToken')} // 传递 token
                     />
 
-                    {/* <div className="flex justify-center mt-6">
-                        <button
-                            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                            disabled={page === 1}
-                            className={`px-4 py-2 mr-2 ${page === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded`}>
-                            上一页
-                        </button>
-                        <button
-                            onClick={() => setPage((prev) => prev + 1)}
-                            className="px-4 py-2 bg-blue-500 text-white rounded">
-                            下一页
-                        </button>
-                    </div>
 
-                    
-                    <p className="text-center mt-2">当前页: {page}</p> */}
                 </div>
             </section>
 

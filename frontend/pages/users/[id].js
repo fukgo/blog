@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import dayjs from 'dayjs';
-import { FaEnvelope, FaUser, FaCalendarAlt } from 'react-icons/fa';
-
+import {getAuthUserSessionUrl, getUserArticlesUrl, getUserUrl} from '@/api_list';
+import {FaCalendarAlt, FaEnvelope, FaUser} from "react-icons/fa";
+import {useRouter} from "next/router";
+import {useEffect, useState} from "react";
+import Link from "next/link";
+import dayjs from 'dayjs'; // Import dayjs
 const UserProfile = ({ initialUser, initialArticles }) => {
     const router = useRouter();
     const { id } = router.query;
@@ -14,20 +14,38 @@ const UserProfile = ({ initialUser, initialArticles }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch(getAuthUserSessionUrl(), {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    setIsAuthenticated(true);
+                }
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+            }
+        };
+
+        checkAuth();
+    }, []);
 
     useEffect(() => {
         const fetchUserData = async () => {
             if (!id) return;
 
             try {
-                const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`, {
+                const userResponse = await fetch(getUserUrl(id), {
                     credentials: 'include'
                 });
                 if (!userResponse.ok) throw new Error('无法获取用户信息');
                 const userData = await userResponse.json();
                 setUser(userData);
 
-                const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=${page}&limit=${limit}`, {
+                const articlesResponse = await fetch(getUserArticlesUrl(id, page, limit), {
                     credentials: 'include'
                 });
                 if (!articlesResponse.ok) throw new Error('无法获取用户文章');
@@ -53,7 +71,7 @@ const UserProfile = ({ initialUser, initialArticles }) => {
                 {/* 用户头像 */}
                 <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 overflow-hidden mb-4 md:mb-0">
                     <img
-                        src={`/default-avatar.png`} // 可以将用户头像的URL放置在这里
+                        src={``} // 可以将用户头像的URL放置在这里
                         alt={`${user.username}的头像`}
                         className="w-full h-full object-cover"
                     />
@@ -73,9 +91,17 @@ const UserProfile = ({ initialUser, initialArticles }) => {
                     <p className="text-lg flex items-center">
                         <FaCalendarAlt className="mr-2" /> 创建时间: {dayjs(user.created_at).format('YYYY年M月D日')}
                     </p>
+                    {isAuthenticated && (
+                        <button
+                            onClick={() => router.push(`/users/update/${id}`)}
+                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
+                            更新用户信息
+                        </button>
+                    )}
                 </div>
             </div>
 
+            {/* 文章列表 */}
             <div>
                 <h2 className="text-3xl font-bold mb-6">已发布的文章</h2>
                 <div className="flex justify-center mb-6">
@@ -103,17 +129,14 @@ const UserProfile = ({ initialUser, initialArticles }) => {
                                     <h3 className="text-2xl font-semibold text-blue-600 hover:underline">
                                         {article.title}
                                     </h3>
+                                    <h6 className="mt-4 text-gray-700">
+                                        {article.digest}
+                                    </h6>
                                     <p className="text-sm text-gray-500 mt-2">
                                         <strong>发布时间:</strong> {dayjs(article.created_at).format('YYYY年M月D日')}
                                     </p>
                                     <p className="text-sm text-gray-500">
                                         <strong>更新时间:</strong> {dayjs(article.updated_at).format('YYYY年M月D日')}
-                                    </p>
-                                    <p className="mt-4 text-gray-700">
-                                        {article.summary || '暂无摘要'}
-                                    </p>
-                                    <p className="mt-4 text-sm text-gray-500">
-                                        <strong>主题:</strong> {article.theme || '无'}
                                     </p>
                                 </Link>
                             </li>
@@ -145,13 +168,13 @@ UserProfile.getInitialProps = async ({ query }) => {
     const { id } = query;
 
     try {
-        const userResponse = await fetch(`http://127.0.0.1:8002/users/${id}`, {
+        const userResponse = await fetch(getUserUrl(id), {
             credentials: 'include'
         });
         if (!userResponse.ok) throw new Error('无法获取用户信息');
         const userData = await userResponse.json();
 
-        const articlesResponse = await fetch(`http://127.0.0.1:8002/users/${id}/articles?page=1&limit=10`, {
+        const articlesResponse = await fetch(getUserArticlesUrl(id, 1, 10), {
             credentials: 'include'
         });
         if (!articlesResponse.ok) throw new Error('无法获取用户文章');

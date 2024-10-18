@@ -61,11 +61,15 @@ pub struct RegisterKey {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub password_conform: String,
+    pub access: String
 }
+
 #[derive(Template, Deserialize, Serialize,Debug)]
 #[template(path = "login.html")]
 pub struct LoginKey {
     pub authenticity_token: String,
     pub username: String,
     pub password: String,
+    pub redirect:Option<String>
 }

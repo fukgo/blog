@@ -2,7 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import { getAllTagsUrl, getAllUsersUrl } from '@/api_list';
 export default function Layout({ children }) {
     const [tags, setTags] = useState([]); // 存储标签的状态
     const [users, setUsers] = useState([]); // 存储用户的状态
@@ -15,8 +15,8 @@ export default function Layout({ children }) {
     const fetchTags = async () => {
         try {
             const token = sessionStorage.getItem('authToken'); // 从 sessionStorage 获取 token
-
-            const response = await axios.get('http://127.0.0.1:8002/tags/all', {
+            console.log(getAllTagsUrl());
+            const response = await axios.get(getAllTagsUrl(), {
                 headers: {
                     'Authorization': `Bearer ${token}`, // 在请求头中添加 token
                 },
@@ -35,7 +35,7 @@ export default function Layout({ children }) {
         try {
             const token = sessionStorage.getItem('authToken'); // 从 sessionStorage 获取 token
 
-            const response = await axios.get('http://127.0.0.1:8002/users', {
+            const response = await axios.get(getAllUsersUrl(), {
                 headers: {
                     'Authorization': `Bearer ${token}`, // 在请求头中添加 token
                 },

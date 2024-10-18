@@ -80,7 +80,12 @@ pub async fn auth_user(
         if let Ok(auth_str) = auth_header.to_str() {
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
                 debug!("token: {}", token);
-                let user = get_auth(token, "http://localhost:8001").await?;
+
+                let auth_token_url = std::env::var("AUTH_TOKEN_URL").map_err(|e|{
+                    error!("missed auth_token_url");
+                    AppError::InternalError
+                })?;
+                let user = get_auth(token, &auth_token_url).await?;
                 // cookies.add(Cookie::new("user", user.username.clone()));
                 let res = session.insert("user", &user.username).await.map_err(|e|{
                     error!("session insert error: {:?}", e);
@@ -151,3 +156,12 @@ pub async fn post_resume(
 }
 
 
+
+pub async fn update_user(
+    app_state: State<Arc<AppState>>,
+    Path(user_id): Path<i64>,
+    Json(user_update): Json<UserUpdate>,
+)->Result<impl IntoResponse,AppError>{
+    update_user_db(&app_state.pool,&user_update,user_id).await?;
+    Ok(())
+}

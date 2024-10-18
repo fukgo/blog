@@ -46,13 +46,18 @@ async fn run()->anyhow::Result<()>{
         .with_same_site(SameSite::None)// 在生产环境中应保持为 true，以确保 Cookie 只能通过 HTTPS 发送
         .with_secure(true)
         .with_http_only(true)
-        .with_expiry(Expiry::OnInactivity(tower_sessions::cookie::time::Duration::hours(timemout.parse::<i64>().unwrap())));
+        .with_expiry(Expiry::OnInactivity(tower_sessions::cookie::time::Duration::hours(timemout.parse::<i64>()?)));
 
     //配置cors
     let cors = CorsLayer::new()
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE"].into_iter().map(|s| s.parse().unwrap()).collect::<Vec<_>>())
         .allow_headers(vec![CONTENT_TYPE, AUTHORIZATION])
-        .allow_origin(HeaderValue::from_static("http://localhost:3000"))
+        .allow_origin(vec![
+            HeaderValue::from_static("http://localhost:3000"),
+            HeaderValue::from_static("http://127.0.0.1:3000"),
+            HeaderValue::from_static("http://127.0.0.1:8001"),
+            HeaderValue::from_static("http://localhost:8001"),
+        ])
         .allow_credentials(true); // 允许凭据;
     let app_state = Arc::new(AppState {
         pool,
@@ -66,7 +71,7 @@ async fn run()->anyhow::Result<()>{
         .route("/", post(post_article).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/:article_id", post(update_article).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/all", get(get_articles_info))
-        .route("/detail/:article_id", get(geget_article_detail))
+        .route("/detail/:article_id", get(get_article_detail))
         .route("/:article_id", delete(delete_article).layer(from_fn_with_state(app_state.clone(),require_login)));
 
 
@@ -81,6 +86,7 @@ async fn run()->anyhow::Result<()>{
     let user_route = Router::new()
         .route("/", get(get_users_info))
         .route("/:user_id", get(get_user_by_id))
+        .route("/:user_id/update",post(update_user).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/logout", delete(delete_user_logout).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/:user_id", delete(delete_user).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/:user_id/articles", get(get_user_article))
@@ -92,10 +98,10 @@ async fn run()->anyhow::Result<()>{
         .route("/session", get(is_login));
 
     let app = Router::new()
-        .nest("/tags", tag_route)
-        .nest("/users", user_route)
-        .nest("/articles", article_route)
-        .nest("/auth", auth_route)
+        .nest("/api/tags", tag_route)
+        .nest("/api/users", user_route)
+        .nest("/api/articles", article_route)
+        .nest("/api/auth", auth_route)
         .layer(session_layer)
         .with_state(app_state.clone())
         .layer(cors)

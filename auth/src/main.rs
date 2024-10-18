@@ -24,6 +24,7 @@ use reqwest::header::HeaderValue;
 use reqwest::header::HeaderName;
 use reqwest::{Method, StatusCode};
 use handle::*;
+use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 lazy_static! {
     pub static ref GLOBAL_PARAMS: Params= {
         dotenv().ok(); // 加载 .env 文件
@@ -62,9 +63,21 @@ async fn run()->anyhow::Result<()>{
         .await?;
     //配置cors
     let cors = CorsLayer::new()
-    .allow_origin(HeaderValue::from_static("http://localhost:8001"))
+    .allow_origin(
+        vec![
+            HeaderValue::from_static("http://127.0.0.1:8001"),
+            HeaderValue::from_static("http://localhost:8001"),
+            HeaderValue::from_static("http://127.0.0.1:3000"),
+            HeaderValue::from_static("http://localhost:3000"),
+        ]
+
+    )
     .allow_methods([Method::GET, Method::POST,Method::DELETE])
-    .allow_headers(vec![HeaderName::from_static("content-type")]);
+    .allow_credentials(true)
+    .allow_headers(vec![
+        HeaderName::from_static("authorization"),
+        HeaderName::from_static("content-type")
+        ]);
     let app_state = Arc::new(AppState {
         pool,
     });
@@ -80,8 +93,8 @@ async fn run()->anyhow::Result<()>{
         .route("/auth/register", get(register_form).post(handle_register_form))
         .route("/",get(auth_token))
 
-        .layer(CsrfLayer::new(config))
         .layer(cors)
+        .layer(CookieManagerLayer::new())
         .layer(TraceLayer::new_for_http()
             .make_span_with(|request: &Request<Body>| {
                 tracing::info_span!("http_request", method = %request.method(), uri = %request.uri())

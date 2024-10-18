@@ -31,7 +31,7 @@ pub async fn post_article_db(
     match article_res {
         Ok(result) => {
             let last_insert_id = result.last_insert_id();
-            debug!("post article success, id: {}", last_insert_id);
+            // debug!("post article success, id: {}", last_insert_id);
 
             for tag_id in &article.tags_id {
                 let res = sqlx::query(

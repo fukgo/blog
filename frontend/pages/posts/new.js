@@ -19,10 +19,10 @@ const NewPost = () => {
     useEffect(() => {
         const fetchUserAndTags = async () => {
             try {
-                const userResponse = await axios.get('http://127.0.0.1:8002/auth/session', { withCredentials: true });
+                const userResponse = await axios.get(getAuthUserSessionUrl, { withCredentials: true });
                 setUserId(userResponse.data.id);
 
-                const tagsResponse = await axios.get('http://127.0.0.1:8002/tags/all', { withCredentials: true });
+                const tagsResponse = await axios.get(getAllTagsUrl, { withCredentials: true });
                 setTags(tagsResponse.data);
             } catch (error) {
                 console.error('获取用户或标签时出错:', error);
@@ -57,7 +57,7 @@ const NewPost = () => {
                 user_id: userId,
                 tags_id: selectedTags,
             };
-            await axios.post('http://127.0.0.1:8002/articles', newPost, { withCredentials: true });
+            await axios.post(createArticleUrl, newPost, { withCredentials: true });
             alert('文章创建成功！');
         } catch (error) {
             console.error('创建文章时出错:', error);

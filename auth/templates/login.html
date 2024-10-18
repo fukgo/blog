@@ -1,97 +1,75 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <title>登录</title>
     <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // 解析 URL 并提取查询参数
-            function getQueryParams() {
-                const params = {};
-                const queryString = window.location.search.substring(1);
-                const regex = /([^&=]+)=([^&]*)/g;
-                let m;
-                while (m = regex.exec(queryString)) {
-                    params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-                }
-                return params;
-            }
+        window.addEventListener('DOMContentLoaded', () => {
+            const queryParams = new URLSearchParams(window.location.search);
+            console.log(queryParams);
 
-            const queryParams = getQueryParams();
-            const redirectUrl = queryParams['redirect'];
-            //将redirectUrl处理为主域名
-            console.log(redirectUrl);
+            // 查找redirect
+            queryParams.forEach((value, key) => {
+                if (key === 'redirect') {
+                    // 获取表单
+                    const form = document.querySelector('form');
+                    console.log(form); // 确认form是否存在
 
-            const redirectDomain = redirectUrl ? new URL(redirectUrl).origin : null;
-            sessionStorage.setItem('redirectDomain', redirectDomain);
-
-            $('#loginForm').submit(function(e) {
-                e.preventDefault(); // 防止表单提交的默认行为
-
-                $.ajax({
-                    type: 'POST',
-                    url: 'http://127.0.0.1:8001/auth/login', // 认证模块的域
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        console.log('Response:', response); // 添加日志输出
-                        // 假设响应中包含 token
-                        const token = response.token;
-
-                        if (redirectDomain) {
-                            // 将 token 放在 header 中进行认证，并跳转到 redirect URL
-                            window.location.href = `${redirectDomain}?token=${token}`;
-                        } else {
-                            if (sessionStorage.getItem('redirectDomain')){
-                                // 将 token 放在 header 中进行认证，并跳转到主域名
-                                console.log(sessionStorage.getItem('redirectDomain'));
-                                console.log(token);
-                                window.location.href = `${sessionStorage.getItem('redirectDomain')}?token=${token}`;
-                            } else {
-
-                            alert('登录成功，但没有提供重定向 URL');
-                            }
-                        }
-                    },
-                    error: function(xhr) {
-                        console.log(xhr.responseText); // 显示错误信息
-                        alert(xhr.responseText); // 显示错误信息
+                    if (form) { // 检查表单是否存在
+                        // 创建新的隐藏input
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'redirect';
+                        input.value = value;
+                        form.appendChild(input); // 将input添加到表单
+                        console.log(input); // 输出input
+                    } else {
+                        console.error('未找到表单');
                     }
-                });
+                }
             });
         });
+
     </script>
 </head>
+
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-sm">
         <h2 class="text-2xl font-bold mb-4">登录</h2>
-        <form method="POST" action="/auth/login" id="loginForm">
-            <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}"/>
+
+        <form method="POST" action="http://127.0.0.1:8001/auth/login" id="loginForm">
+            <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}" />
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
                     用户名
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" name="username" placeholder="用户名" required>
+                <input
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    type="text" name="username" id="username" placeholder="用户名" required>
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
                     密码
                 </label>
-                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="password" name="password" placeholder="密码" required>
+                <input
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    type="password" name="password" id="password" placeholder="密码" required>
             </div>
             <div class="flex items-center justify-between">
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                <button
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="submit">
                     登录
                 </button>
             </div>
-            <!-- <p class="mt-4 text-center">
-                <a class="text-blue-500 hover:text-blue-700" href="/forgot-password">找回密码</a>
-            </p> -->
         </form>
         <p class="mt-4 text-center">
             <a class="text-blue-500 hover:text-blue-700" href="/auth/register">注册</a>
         </p>
     </div>
 </body>
+
 </html>
