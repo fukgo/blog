@@ -79,26 +79,26 @@ async fn run() -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind(addr).await?;
 
     let article_route = Router::new()
-        .route("/", post(post_article))
-        .route("/:article_id", post(update_article))
+        .route("/", post(post_article).layer(from_fn_with_state(app_state.clone(),require_login)))
+        .route("/:article_id", post(update_article).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/feature", get(get_featured_article))
         .route("/detail/:article_id", get(get_article_detail))
         .route("/late", get(get_articles_latest))
-        .route("/:article_id", delete(delete_article))
+        .route("/:article_id", delete(delete_article).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/titles/all", get(get_article_titles))
         .route("/:article_id/tags", get(get_article_tags));
 
     let tag_route = Router::new()
         .route("/:tag_name", get(creata_tag))
-        .route("/delete/:tag_id", delete(delete_tag))
+        .route("/delete/:tag_id", delete(delete_tag).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/all", get(get_tags))
         .route("/:tag_id/articles", get(get_tag_articles_info));
 
     let user_route = Router::new()
         .route("/", get(get_users_info))
         .route("/:user_detail_id", get(get_user_by_id))
-        .route("/:user_detail_id/update", post(update_user))
-        .route("/logout", delete(delete_user_logout))
+        .route("/:user_detail_id/update", post(update_user).layer(from_fn_with_state(app_state.clone(),require_login)))
+        .route("/logout", delete(delete_user_logout).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/:user_id/articles", get(get_user_article))
         .route("/:user_id/resume", get(get_user_resume))
         .route(
@@ -111,12 +111,12 @@ async fn run() -> anyhow::Result<()> {
         .route("/token", get(auth_user))
         .route("/session", get(is_login));
     let comment_route = Router::new()
-        .route("/post", post(post_comment))
+        .route("/post", post(post_comment).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/:article_id", get(get_comments_by_article_id));
     let catalogue_route = Router::new()
-        .route("/", post(post_catalogue))
-        .route("/:catalogue_id", post(post_update_catalogue))
-        .route("/:catalogue_id", delete(delete_catalogue))
+        .route("/", post(post_catalogue).layer(from_fn_with_state(app_state.clone(),require_login)))
+        .route("/:catalogue_id", post(post_update_catalogue).layer(from_fn_with_state(app_state.clone(),require_login)))
+        .route("/:catalogue_id", delete(delete_catalogue).layer(from_fn_with_state(app_state.clone(),require_login)))
         .route("/all", get(get_all_catalogues))
         .route("/:catalogue_id", get(get_catalogue_by_id))
         .route("/:catalogue_id/articles", get(get_catalogue_article_titles))

@@ -30,7 +30,7 @@ use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
+        .with_max_level(tracing::Level::WARN)
         .init();
 
     dotenv().ok(); // 加载 .env 文件
