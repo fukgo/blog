@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import {getAllTagsUrl} from "@/api_list";
+import {createTagUrl, deleteTagUrl, getAllTagsUrl} from "@/api_list";
 
 const TagsList = () => {
     const [tags, setTags] = useState([]); // State to store tags
@@ -41,7 +41,7 @@ const TagsList = () => {
             await axios.get(createTagUrl(newTag), {
                 withCredentials: true
             });
-            fetchTags(); // Refresh the tags list
+            fetchTags(); // Refresh the tags catalogues
             setNewTag(''); // Clear the input field
         } catch (err) {
             setError(err); // Handle error
@@ -76,7 +76,7 @@ const TagsList = () => {
                 <button className="bg-blue-500 text-white px-4 py-2 rounded">增加标签</button>
             </form>
 
-            {/* Display the list of tags */}
+            {/* Display the catalogues of tags */}
             <ul className="space-y-2">
                 {tags.map(tag => (
                     <li key={tag.id} className="flex justify-between items-center p-2 border rounded">

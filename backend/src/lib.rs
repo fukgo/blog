@@ -1,6 +1,6 @@
-pub mod error;
-pub mod middleware;
-pub mod model;
-pub mod utils;
-pub mod handles;
 pub mod dbs;
+pub mod error;
+pub mod handles;
+pub mod middleware;
+pub mod models;
+pub mod utils;

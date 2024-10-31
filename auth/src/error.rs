@@ -1,7 +1,7 @@
 use axum::{
+    http::StatusCode,
     response::{IntoResponse, Response},
     Json,
-    http::StatusCode,
 };
 use serde::Serialize;
 
@@ -19,8 +19,8 @@ pub enum Err {
     RequestNotFound,
     DataBaseError,
     InvalidCsrfToken,
-    AccessError
-
+    AccessError,
+    TemplateError
 }
 
 // 为每个错误提供状态码和消息
@@ -38,7 +38,8 @@ impl Err {
             Err::RequestNotFound => StatusCode::NOT_FOUND,
             Err::DataBaseError => StatusCode::INTERNAL_SERVER_ERROR,
             Err::InvalidCsrfToken => StatusCode::FORBIDDEN,
-            Err::AccessError=>StatusCode::FORBIDDEN
+            Err::AccessError => StatusCode::FORBIDDEN,
+            Err::TemplateError => StatusCode::INTERNAL_SERVER_ERROR
         }
     }
 
@@ -56,6 +57,7 @@ impl Err {
             Err::DataBaseError => "Database error".to_string(),
             Err::InvalidCsrfToken => "Invalid CSRF token".to_string(),
             Err::AccessError => "access error".to_string(),
+            Err::TemplateError => "Template error".to_string()
         }
     }
 }

@@ -1,15 +1,21 @@
-use crate::model::*;
-use crate::utils::get_now_date;
-use crate::{error::AppError, model::AuthedUser};
+use crate::models::user::*;
+use crate::{error::AppError, models::user::*};
 use sqlx::MySqlPool;
+use sqlx::Row;
 use tracing::{debug, error, info};
-
 pub async fn get_user_info_by_auth(
     pool: &MySqlPool,
-    user: &AuthedUser,
-)-> Result<AuthedUser, &'static str> {
-    let user_res = sqlx::query_as::<_, AuthedUser>(
-        r#"SELECT id, username, email,nickname FROM user_table WHERE username = ?"#,
+    user: &User,
+) -> Result<UserDetailDisplay, &'static str> {
+    let user_res = sqlx::query_as::<_, UserDetailDisplay>(
+        r#"select
+    u.id,
+    u.email,
+    u.username,
+    d.avatar,
+    d.nickname,
+    d.skills
+    from user_table as u join user_detail_table as d on u.id = d.user_id where u.username=?;"#,
     )
     .bind(&user.username)
     .fetch_one(pool)
@@ -31,31 +37,53 @@ pub async fn get_user_info_by_auth(
         }
     }
 }
+pub async fn storage_auth_user(pool: &MySqlPool, user: &User) -> Result<(), AppError> {
+    // 执行插入 user_table，并返回插入的 ID
+    let _user_res = sqlx::query(
+        r#"
+        INSERT INTO user_table (username, email) VALUES (?,?)
+        "#,
+    )
+    .bind(&user.username)
+    .bind(&user.email)
+    .execute(pool) // 使用 execute 只执行插入
+    .await
+    .map_err(|e| {
+        error!("storage user info failed: {:?}", e);
+        AppError::DataBaseError
+    })?;
 
-pub async fn storage_auth_user(pool: &MySqlPool, user: &AuthedUser) -> Result<(), AppError> {
-    let res = sqlx::query(r#"INSERT INTO user_table (username,email) VALUES (?, ?)"#)
+    // 获取插入的 ID
+    let user_id: i64 = sqlx::query_scalar("SELECT id FROM user_table WHERE username = ?")
         .bind(&user.username)
-        .bind(&user.email)
-        .execute(pool)
-        .await;
-
-    match res {
-        Ok(_) => {
-            debug!("storage user info success");
-            Ok(())
-        }
-        Err(e) => {
+        .fetch_one(pool)
+        .await
+        .map_err(|e| {
             error!("storage user info failed: {:?}", e);
-            Err(AppError::DataBaseError)
-        }
-    }
+            AppError::DataBaseError
+        })?;
+    debug!("user_id: {}", user_id);
+    debug!("storage user info success");
+
+    // 插入 user_detail_table，使用获取的 ID
+    sqlx::query(r#"INSERT INTO user_detail_table (user_id, nickname) VALUES (?, ?)"#)
+        .bind(user_id) // 使用插入的 ID
+        .bind(&user.username) // 假设 nickname 使用 username
+        .execute(pool)
+        .await
+        .map_err(|e| {
+            error!("storage user detail info failed: {:?}", e);
+            AppError::DataBaseError
+        })?;
+
+    Ok(())
 }
 
-pub async fn get_users_info_db(
-    pool:&MySqlPool,
-)->Result<Vec<User>,AppError>{
-    let users = sqlx::query_as::<_, User>(
-        r#"SELECT * FROM user_table"#,
+pub async fn get_users_info_db(pool: &MySqlPool) -> Result<Vec<UserInfo>, AppError> {
+    let users = sqlx::query_as::<_, UserInfo>(
+        r#"
+select id,nickname,avatar from user_detail_table;
+    "#,
     )
     .fetch_all(pool)
     .await;
@@ -72,87 +100,105 @@ pub async fn get_users_info_db(
     }
 }
 
-
-pub async fn get_user_by_id_db(
-    pool:&MySqlPool,
-    user_id: i64,
-)->Result<User,AppError>{
-
-
-    let user = sqlx::query_as::<_, User>(
-        r#"SELECT * FROM user_table WHERE id = ?"#,
+pub async fn get_users_info_by_id_db(pool: &MySqlPool, user_id: i64) -> Result<UserInfo, AppError> {
+    let user = sqlx::query_as::<_, UserInfo>(
+        r#"select id,nickname,avatar from user_detail_table where id=?;"#,
     )
     .bind(user_id)
     .fetch_one(pool)
-    .await;
+    .await
+    .map_err(|e| {
+        error!("get user info failed: {:?}", e);
+        AppError::UserNotFound
+    })?;
+    Ok(user)
+}
+
+pub async fn get_user_detail_by_id_db(pool: &MySqlPool, id: i64) -> Result<UserDetail, AppError> {
+    let user = sqlx::query_as::<_, UserDetail>(
+        r#"select * from user_detail_table where id=?;
+"#,
+    )
+    .bind(id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| {
+        error!("get user info failed: {:?}", e);
+        AppError::UserNotFound
+    })?;
+
+    Ok(user)
+}
+
+pub async fn get_user_by_username_db(pool: &MySqlPool, username: &str) -> Result<User, AppError> {
+    let user = sqlx::query_as::<_, User>(r#"SELECT * FROM user_table WHERE username = ?"#)
+        .bind(username)
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| {
+            error!("get user info failed: {:?}", e);
+            AppError::UserNotFound
+        })?;
 
     match user {
-        Ok(user) => {
+        Some(user) => {
             debug!("get user info success");
             Ok(user)
         }
-        Err(e) => {
-            error!("get user info failed: {:?}", e);
+        _ => {
+            error!("get user info failed");
             Err(AppError::UserNotFound)
         }
     }
 }
 
-pub async fn get_user_by_username_db(
-    pool:&MySqlPool,
+pub async fn get_session_user_by_username_db(
+    pool: &MySqlPool,
     username: &str,
-)->Result<User,AppError>{
-
-    let user = sqlx::query_as::<_, User>(
-        r#"SELECT * FROM user_table WHERE username = ?"#,
+) -> Result<UserSession, AppError> {
+    let user = sqlx::query_as::<_, UserSession>(
+        r#"
+        SELECT 
+            b.id AS user_detail_id, 
+            u.username AS username, 
+            u.email AS email, 
+            b.nickname AS nickname, 
+            b.avatar AS avatar
+        FROM 
+            user_table u
+        JOIN 
+            user_detail_table b 
+        ON 
+            u.id = b.user_id
+        WHERE 
+            u.username = ?;
+        "#,
     )
     .bind(username)
-    .fetch_one(pool)
-    .await;
-
-    match user {
-        Ok(user) => {
-            debug!("get user info success");
-            Ok(user)
-        }
-        Err(e) => {
-            error!("get user info failed: {:?}", e);
-            Err(AppError::UserNotFound)
-        }
-    }
-}
-pub async fn delete_user_db(
-    pool:&MySqlPool,
-    user_id: i64,
-)->Result<(),AppError>{
-    let res = sqlx::query(r#"DELETE FROM user_table WHERE id = ?"#)
-        .bind(user_id)
-        .execute(pool)
-        .await;
-
-    match res {
-        Ok(_) => {
-            debug!("delete user success");
-            Ok(())
-        }
-        Err(e) => {
-            error!("delete user failed: {:?}", e);
-            Err(AppError::UserNotFound)
-        }
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| {
+        error!("get user info failed: {:?}", e);
+        AppError::UserNotFound
+    })?;
+    if let Some(user) = user {
+        debug!("get user info success");
+        Ok(user)
+    } else {
+        error!("get user info failed");
+        Err(AppError::UserNotFound)
     }
 }
 
 pub async fn get_resume_by_userid_db(
-    pool:&MySqlPool,
-    user_id: i64,
-)->Result<Resume,AppError>{
-
-    let resumes = sqlx::query_as::<_, Resume>(
-        r#"SELECT * FROM resume_table WHERE user_id = ?"#,
-    )
-    .bind(user_id)
-    .fetch_one(pool)
-    .await;
+    pool: &MySqlPool,
+    user_detail_id: i64,
+) -> Result<Resume, AppError> {
+    let resumes =
+        sqlx::query_as::<_, Resume>(r#"SELECT * FROM resume_table WHERE user_detail_id = ?"#)
+            .bind(user_detail_id)
+            .fetch_one(pool)
+            .await;
 
     match resumes {
         Ok(resumes) => {
@@ -169,22 +215,23 @@ pub async fn get_resume_by_userid_db(
 pub async fn save_or_update_resume_db(
     pool: &MySqlPool,
     resume: &ResumeCreate,
-    user_id: i64,
+    user_detail_id: i64,
 ) -> Result<(), AppError> {
     // 检查简历是否存在
-    let existing_resume = sqlx::query(r#"SELECT id FROM resume_table WHERE user_id = ?"#)
-        .bind(user_id)
+    let existing_resume = sqlx::query(r#"SELECT id FROM resume_table WHERE user_detail_id = ?"#)
+        .bind(user_detail_id)
         .fetch_optional(pool)
         .await;
 
     match existing_resume {
         Ok(Some(_)) => {
             // 如果存在，则更新简历
-            let res = sqlx::query(r#"UPDATE resume_table SET content = ? WHERE user_id = ?"#)
-                .bind(&resume.content)
-                .bind(user_id)
-                .execute(pool)
-                .await;
+            let res =
+                sqlx::query(r#"UPDATE resume_table SET content = ? WHERE user_detail_id = ?"#)
+                    .bind(&resume.content)
+                    .bind(user_detail_id)
+                    .execute(pool)
+                    .await;
 
             match res {
                 Ok(_) => {
@@ -199,11 +246,12 @@ pub async fn save_or_update_resume_db(
         }
         Ok(None) => {
             // 如果不存在，则插入简历
-            let res = sqlx::query(r#"INSERT INTO resume_table (user_id, content) VALUES (?, ?)"#)
-                .bind(user_id)
-                .bind(&resume.content)
-                .execute(pool)
-                .await;
+            let res =
+                sqlx::query(r#"INSERT INTO resume_table (user_detail_id, content) VALUES (?, ?)"#)
+                    .bind(user_detail_id)
+                    .bind(&resume.content)
+                    .execute(pool)
+                    .await;
 
             match res {
                 Ok(_) => {
@@ -222,20 +270,29 @@ pub async fn save_or_update_resume_db(
         }
     }
 }
-pub async fn update_user_db(
+
+pub async fn update_userdetail_db(
     pool: &MySqlPool,
-    user: &UserUpdate,
-    user_id:i64
-)->Result<(), AppError>{
-    let mut query = "UPDATE user_table SET ".to_string();
+    user: &UserDetailUpdate,
+    user_detail_id: i64,
+) -> Result<(), AppError> {
+    let mut query = "UPDATE user_detail_table SET ".to_string();
     let mut updates = Vec::new();
     if let Some(ref nickname) = user.nickname {
         updates.push("nickname = ?".to_string());
     }
-    //todo!
+    if let Some(ref avatar) = user.avatar {
+        updates.push("avatar = ?".to_string());
+    }
+    if let Some(ref skills) = user.skills {
+        updates.push("skills = ?".to_string());
+    }
+    if let Some(ref bio) = user.bio {
+        updates.push("bio = ?".to_string());
+    }
     // 检查是否有任何字段需要更新
     if updates.is_empty() {
-        debug!("No fields to update for article_id: {}", user_id);
+        debug!("No fields to update for article_id: {}", user_detail_id);
         return Ok(()); // 没有字段需要更新，直接返回成功
     }
     query += &updates.join(", "); // 以逗号连接各个更新片段
@@ -244,7 +301,16 @@ pub async fn update_user_db(
     if let Some(ref nickname) = user.nickname {
         sql_query = sql_query.bind(nickname);
     }
-    sql_query = sql_query.bind(user_id);
+    if let Some(ref avatar) = user.avatar {
+        sql_query = sql_query.bind(avatar);
+    }
+    if let Some(ref skills) = user.skills {
+        sql_query = sql_query.bind(skills);
+    }
+    if let Some(ref bio) = user.bio {
+        sql_query = sql_query.bind(bio);
+    }
+    sql_query = sql_query.bind(user_detail_id);
     let res = sql_query.execute(pool).await;
 
     match res {
@@ -258,4 +324,3 @@ pub async fn update_user_db(
         }
     }
 }
-

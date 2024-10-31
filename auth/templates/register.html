@@ -4,94 +4,63 @@
     <meta charset="UTF-8">
     <title>注册</title>
     <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <script>
-        // document.addEventListener("DOMContentLoaded", function() {
-        //     const form = document.getElementById("registerForm");
-        //     form.addEventListener("submit", async function(event) {
-        //         event.preventDefault(); // 防止表单提交的默认行为
-
-        //         const formData = new FormData(form);
-        //         const data = new URLSearchParams(formData);
-
-        //         try {
-        //             const response = await fetch(form.action, {
-        //                 method: form.method,
-        //                 headers: {
-        //                     "Content-Type": "application/x-www-form-urlencoded",
-        //                     "Accept": "application/json"
-        //                 },
-        //                 body: data
-        //             });
-
-        //             if (!response.ok) {
-        //                 console.log(response);
-        //                 throw new Error("Network response was not ok");
-        //             }
-
-        //             const result = await response.json();
-        //             console.log(response);
-        //             console.log("Success:", result);
-        //             alert("注册成功！");
-        //             //等待0.5秒后跳转到登录页面
-        //             setTimeout(function() {
-        //                 window.location.href = "/auth/login";
-        //             }, 500);
-        //         } catch (error) {
-        //             console.error("Error:", error);
-        //             alert("注册失败，请重试。");
-        //         }
-        //     });
-        // });
-    </script>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gray-100">
-<div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-sm">
-    <h2 class="text-2xl font-bold mb-4">注册</h2>
 
-    <!-- 注册表单 -->
-    <form method="POST" action="/auth/register" id="registerForm">
-        <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}"/>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
-                用户名
-            </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" name="username" id="username" placeholder="用户名" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
-                邮箱
-            </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="email" name="email" id="email" placeholder="邮箱" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
-                密码
-            </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="password" name="password" id="password" placeholder="密码" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="password_conform">
-                确认密码
-            </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="password" name="password_conform" id="password_conform" placeholder="确认密码" required>
-        </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="access">
-                邀请码
-            </label>
-            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" name="access" id="access" placeholder="邀请码" required>
-        </div>
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
+    <div class="bg-white shadow-lg rounded-lg px-10 pt-8 pb-10 mb-4 w-full max-w-sm transform transition-all duration-300 hover:scale-105">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">注册</h2>
 
-        <div class="flex items-center justify-between">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                注册
-            </button>
-        </div>
+        <!-- 注册表单 -->
+        <form method="POST" action="/auth/register" id="registerForm">
+            <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}" />
+            
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-semibold mb-2" for="username">用户名</label>
+                <input
+                    class="shadow-md appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="text" name="username" id="username" placeholder="用户名" required>
+            </div>
 
-        <p class="mt-4 text-center">
-            <a class="text-blue-500 hover:text-blue-700" href="/auth/login">登录</a>
-        </p>
-    </form>
-</div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-semibold mb-2" for="email">邮箱</label>
+                <input
+                    class="shadow-md appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="email" name="email" id="email" placeholder="邮箱" required>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-semibold mb-2" for="password">密码</label>
+                <input
+                    class="shadow-md appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="password" name="password" id="password" placeholder="密码" required>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-semibold mb-2" for="password_conform">确认密码</label>
+                <input
+                    class="shadow-md appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="password" name="password_conform" id="password_conform" placeholder="确认密码" required>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-semibold mb-2" for="access">邀请码</label>
+                <input
+                    class="shadow-md appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="text" name="access" id="access" placeholder="邀请码" required>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button
+                    class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition-transform duration-150 ease-in-out transform hover:scale-105"
+                    type="submit">
+                    注册
+                </button>
+            </div>
+
+            <p class="mt-6 text-center">
+                <a class="text-blue-500 hover:text-blue-700 font-semibold underline transition-colors duration-150" href="/auth/login">登录</a>
+            </p>
+        </form>
+    </div>
 </body>
 </html>

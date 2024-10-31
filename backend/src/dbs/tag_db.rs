@@ -1,5 +1,5 @@
-use crate::model::*;
-use crate::{error::AppError, model::AuthedUser};
+use crate::models::tag::*;
+use crate::{error::AppError, models::user::*};
 use sqlx::MySqlPool;
 use tracing::{debug, error, info};
 
@@ -37,18 +37,20 @@ pub async fn post_tag_db(pool: &MySqlPool, tag: &str) -> Result<(), AppError> {
     }
 }
 pub async fn delete_tag_db(pool: &MySqlPool, tag_id: i64) -> Result<(), AppError> {
-    // 检查是否在 blog_tags_table 中存在 tag_id
-    let exists = sqlx::query_scalar::<_, bool>(r#"SELECT EXISTS(SELECT 1 FROM blog_tags_table WHERE tag_id = ?)"#)
-        .bind(tag_id)
-        .fetch_one(pool)
-        .await?;
+    // 检查是否在 article_tags_table 中存在 tag_id
+    let exists = sqlx::query_scalar::<_, bool>(
+        r#"SELECT EXISTS(SELECT 1 FROM article_tags_table WHERE tag_id = ?)"#,
+    )
+    .bind(tag_id)
+    .fetch_one(pool)
+    .await?;
 
     if exists {
-        error!("tag_id is in blog_tags_table, can't delete");
+        error!("tag_id is in article_tags_table, can't delete");
         return Err(AppError::InternalError);
     }
 
-    debug!("tag_id is not in blog_tags_table, can delete");
+    debug!("tag_id is not in article_tags_table, can delete");
 
     // 删除标签
     sqlx::query(r#"DELETE FROM tags_table WHERE id = ?"#)

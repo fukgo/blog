@@ -28,9 +28,9 @@ END;
 
 CREATE table user_table(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(20) NOT NULL UNIQUE ,
+    username VARCHAR(100) NOT NULL UNIQUE ,
     email VARCHAR(250) NOT NULL UNIQUE,
-    nickname VARCHAR(20) UNIQUE,
+    nickname VARCHAR(200) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -42,9 +42,9 @@ CREATE TABLE tags_table (
 
 CREATE TABLE blogs_table_2024_10 (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(20) UNIQUE NOT NULL,
+    title VARCHAR(50) UNIQUE NOT NULL,
     content TEXT NOT NULL,
-    digest VARCHAR(30) NOT NULL ,
+    digest VARCHAR(100) NOT NULL ,
     user_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -65,3 +65,5 @@ create table resume(
     user_id INT,
     content text not null
 )
+
+

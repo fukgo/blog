@@ -2,11 +2,12 @@ use crate::auth::{generate_token, verify_token};
 use crate::error::Err;
 use crate::model::*;
 use crate::AppState;
-
+use ninja::Ninja;
 use axum::body::Body;
 use axum::extract::State;
 use axum::http::{Request, StatusCode};
 use axum::response::{Html, IntoResponse};
+use axum::{response::Redirect, routing::post, Router};
 use axum::{Form, Json};
 use axum_csrf::{CsrfConfig, CsrfLayer, CsrfToken};
 use std::fs::read_to_string;
@@ -14,11 +15,6 @@ use std::sync::Arc;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tracing::{debug, error, info, trace};
 use uuid::Uuid;
-use axum::{
-    routing::post,
-    response::Redirect,
-    Router,
-};
 pub async fn login(
     app_state: State<Arc<AppState>>,
     login_data: Json<LoginRequest>,
@@ -110,13 +106,14 @@ pub async fn auth_token(
         if let Ok(auth_str) = auth_header.to_str() {
             if let Some(token) = auth_str.strip_prefix("Bearer ") {
                 let key = std::env::var("KEY").unwrap_or_else(|_| "keynotset".to_string());
-                let timeout = std::env::var("TOKEN_TIMEOUT").unwrap_or_else(|_|"2".to_string()).parse::<u64>().unwrap();
-                let username = verify_token(&token, &key, timeout)
-                    .await
-                    .map_err(|e| {
-                        error!("{:?}", e);
-                        Err::TokenInvalid
-                    })?;
+                let timeout = std::env::var("TOKEN_TIMEOUT")
+                    .unwrap_or_else(|_| "2".to_string())
+                    .parse::<u64>()
+                    .unwrap();
+                let username = verify_token(&token, &key, timeout).await.map_err(|e| {
+                    error!("{:?}", e);
+                    Err::TokenInvalid
+                })?;
                 let user: Option<AuthedUser> = sqlx::query_as::<_, AuthedUser>(
                     "SELECT id,username,email FROM auth_user WHERE username = ?",
                 )
@@ -165,8 +162,6 @@ pub async fn login_form(cookies: Cookies) -> impl IntoResponse {
     html = html.replace("{{ authenticity_token }}", &csrf_token);
 
     Html(html)
-
-
 }
 pub async fn handle_login_form(
     app_state: State<Arc<AppState>>,
@@ -184,15 +179,16 @@ pub async fn handle_login_form(
             return Err(Err::InvalidCsrfToken);
         }
 
-        let user: Option<User> = sqlx::query_as::<_, User>("SELECT * FROM auth_user WHERE username = ?")
-            .bind(&login_data.username)
-            .fetch_optional(&app_state.pool)
-            .await
-            .map_err(|e| {
-                error!("{}", e);
-                Err::InternalError
-            })?;
-        
+        let user: Option<User> =
+            sqlx::query_as::<_, User>("SELECT * FROM auth_user WHERE username = ?")
+                .bind(&login_data.username)
+                .fetch_optional(&app_state.pool)
+                .await
+                .map_err(|e| {
+                    error!("{}", e);
+                    Err::InternalError
+                })?;
+
         let user = user.ok_or(Err::UserNotFound)?;
         match bcrypt::verify(&login_data.password, &user.password) {
             Ok(valid) => {
@@ -201,16 +197,20 @@ pub async fn handle_login_form(
                     let token = generate_token(&user.username, &key).await?;
 
                     if let Some(redirect) = login_data.redirect {
-                        let redirect_url = if redirect.starts_with("http://") || redirect.starts_with("https://") {
+                        let redirect_url = if redirect.starts_with("http://")
+                            || redirect.starts_with("https://")
+                        {
                             redirect.to_string()
                         } else {
-                            format!("https://{}", redirect)  // 默认使用 https://，你也可以改为 http://
+                            format!("https://{}", redirect) // 默认使用 https://，你也可以改为 http://
                         };
                         // 跳转到指定页面
+                        debug!("redirect to: {}", redirect_url);
                         Ok(Redirect::to(&format!("{}?token={}", redirect_url, token)))
                     } else {
                         let res = LoginResponse { token };
-                        return Ok(Redirect::to("/")); // 直接返回 JSON 响应
+                        debug!("login success: {:?}", res);
+                        return Ok(Redirect::to("/")); 
                     }
                 } else {
                     error!("Invalid username or password");
@@ -242,7 +242,7 @@ pub async fn handle_register_form(
             );
             return Err(Err::InvalidCsrfToken);
         } else {
-            if register_data.access != "qweasdzxc"{
+            if register_data.access != "qweasdzxc" {
                 error!("accedd invalid");
                 return Err(Err::AccessError);
             }
@@ -290,4 +290,63 @@ pub async fn handle_register_form(
         error!("CSRF token not found in cookies");
         return Err(Err::InvalidCsrfToken);
     }
+}
+
+use serde_json::Value; // 引入 serde_json 库
+
+use tera::{Tera, Context};
+
+pub async fn index(app_state: State<Arc<AppState>>) -> Result<impl IntoResponse, Err> {
+    let rows = sqlx::query_as::<_, (i32, String, Value)>(r#"
+        SELECT
+            sc.id,
+            sc.category_name,
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'site_title', sl.site_title,
+                    'site_info', sl.site_info,
+                    'site_url', sl.site_url
+                )
+            ) AS web_list
+        FROM
+            site_catalogues sc
+        LEFT JOIN
+            site_list sl ON sc.id = sl.catalogue_id
+        GROUP BY
+            sc.id, sc.category_name;
+    "#)
+    .fetch_all(&app_state.pool)
+    .await
+    .map_err(|e| {
+        error!("{}", e);
+        Err::DataBaseError
+    })?;
+
+    let mut site_vec: Vec<SiteVec> = Vec::new();
+
+    // Parse JSON results
+    for (id, category_name, web_list_json) in rows {
+        let web_list: Vec<SiteInfo> = serde_json::from_value(web_list_json).unwrap_or_default();
+        site_vec.push(SiteVec {
+            id,
+            category_name,
+            web_list,
+        });
+    }
+
+    // 初始化 Tera
+    let tera = Tera::new("templates/**/*").unwrap();
+    
+    // 创建上下文并插入数据
+    let mut context = Context::new();
+    context.insert("categories", &site_vec);
+
+    // 渲染模板
+    let rendered = tera.render("index.html", &context).map_err(|e| {
+        error!("{}", e);
+        Err::TemplateError
+    })?;
+
+    // 返回渲染的 HTML
+    Ok(Html(rendered))
 }

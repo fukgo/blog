@@ -2,6 +2,8 @@
 import { useRouter } from 'next/router';
 import ArticleList from '../../components/ArticleList';
 import { useState } from 'react';
+import {getTagArticlesUrl} from "@/api_list";
+import TagArticleList from "@/components/TagArticleList";
 
 const TagPage = () => {
     const router = useRouter();
@@ -32,29 +34,15 @@ const TagPage = () => {
             </div>
 
             {/* 文章列表 */}
-            <ArticleList
-                url={`http://127.0.0.1:8002/tags/${id}/articles`}
+            <TagArticleList
+                id={id}
                 page={page}
                 limit={limit}
                 setPage={setPage}
                 setLimit={setLimit}
             />
 
-            {/* <div className="flex justify-center mt-6">
-                <button
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                    className={`px-4 py-2 mr-2 ${page === 1 ? 'bg-gray-300' : 'bg-blue-500 text-white'} rounded`}>
-                    上一页
-                </button>
-                <button
-                    onClick={() => setPage((prev) => prev + 1)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded">
-                    下一页
-                </button>
-            </div>
 
-            <p className="text-center mt-2">当前页: {page}</p> */}
         </div>
     );
 };

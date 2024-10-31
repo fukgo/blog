@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Navigation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(120deg, #f0f0f0, #e0e0e0);
+            color: #333;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Center vertically */
+            height: 100vh; /* Full viewport height */
+        }
+
+        .container {
+    display: flex; /* 将.container设置为Flex容器 */
+    flex-direction: column; /* 垂直排列子元素 */
+    align-items: center; /* 水平居中 */
+    justify-content: center; /* 垂直居中 */
+    height: 100%; /* 确保.container占满父元素高度 */
+    text-align: center; /* 文本居中 */
+}
+
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .nav-pills {
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+
+        .nav-link {
+            border-radius: 5px;
+            background-color: #0056b3;
+            color: white;
+            margin-right: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #c1d0e2;
+        }
+
+        .tab-content {
+            display: none;
+            margin-top: 20px;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            opacity: 1;
+        }
+
+        .card {
+            background-color: rgb(212, 216, 231);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 10px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .card a {
+            display: block;
+            color: #cad9e9;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .card a:hover {
+            text-decoration: underline;
+        }
+
+        .add-category {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .add-category input {
+            flex: 1;
+            margin-right: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .add-category button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-category button:hover {
+            background-color: #7ca0c7;
+        }
+
+        /* 搜索栏样式 */
+        .search-bar input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+        }
+
+        .nav-pills .nav-link {
+            background-color: #427dbb; /* 设置背景颜色 */
+            color: white; /* 设置字体颜色 */
+            border-radius: 5px; /* 设置圆角边框 */
+            margin: 5px; /* 设置外边距 */
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #3a4149; /* 设置激活状态的背景颜色 */
+            font-weight: bold; /* 设置激活状态的字体加粗 */
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: #0056b3; /* 设置悬停状态的背景颜色 */
+            color: white; /* 设置悬停状态的字体颜色 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div>
+            <h1>网站导航</h1>
+            <p>欢迎访问我们的网站导航页面！在这里，您可以找到各种类别的链接，轻松访问您感兴趣的网站。</p>
+        </div>
+
+        <!-- 使用紧凑的导航样式 -->
+        <ul class="nav nav-pills" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a href="#" class="nav-link tab-link active" data-tab="category1">分类1</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#" class="nav-link tab-link" data-tab="category2">分类2</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#" class="nav-link tab-link" data-tab="category3">分类3</a>
+            </li>
+        </ul>
+
+        <!-- 分类1内容 -->
+        <div class="tab-content active" id="category1">
+            <div class="card">
+                <div class="website-info">
+                    <h3>网站标题1</h3>
+                    <a href="http://www.your-web-page.com/">访问网站</a>
+                    <p>网站描述：这是第一个网站的介绍，提供丰富的内容和资源，欢迎您前来探索。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类2内容 -->
+        <div class="tab-content" id="category2">
+            <div class="card">
+                <div class="website-info">
+                    <h3>网站标题2</h3>
+                    <a href="http://www.example.com/">访问网站</a>
+                    <p>网站描述：这是第二个网站的介绍，涵盖各种主题，适合不同兴趣的用户。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类3内容 -->
+        <div class="tab-content" id="category3">
+            <div class="card">
+                <div class="website-info">
+                    <h3>网站标题3</h3>
+                    <a href="http://www.sample.com/">访问网站</a>
+                    <p>网站描述：这是第三个网站的介绍，提供最新的资讯和资源，快来了解吧！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tabs = document.querySelectorAll(".tab-link");
+            const contents = document.querySelectorAll(".tab-content");
+
+            tabs.forEach(tab => {
+                tab.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    tabs.forEach(t => t.classList.remove("active"));
+                    contents.forEach(content => {
+                        content.classList.remove("active");
+                        content.style.opacity = '0';  // 设置为透明
+                    });
+
+                    this.classList.add("active");
+                    const contentId = this.getAttribute("data-tab");
+                    const activeContent = document.getElementById(contentId);
+                    activeContent.classList.add("active");
+                    setTimeout(() => {
+                        activeContent.style.opacity = '1';  // 设置为不透明
+                    }, 0);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

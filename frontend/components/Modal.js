@@ -1,14 +1,25 @@
-//Modal.js
-import React, { useEffect } from 'react';
+import React from 'react';
+import { loginUrl,localDomain } from "@/api_list";
 
-const Modal = ({ isOpen, onClose, onLogin }) => {
+const Modal = ({ isOpen,}) => {
+    const onClose = () => {
+        // Close the modal and redirect to the home page
+        window.location.href = '/';
+    }
+    const onLogin = () => {
+        // Redirect to the login page
+        window.location.href = loginUrl()+`?redirect=${localDomain}`;
+    }
+
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                <h2 className="text-xl font-semibold">用户未登录</h2>
-                <p className="mt-2">您需要登录才能访问该页面。</p>
+            <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+                <h2 className="text-2xl font-semibold text-gray-800">没有登录</h2>
+                <p className="mt-2 text-gray-600">
+                    你还没有登录，请先登录后再继续操作
+                </p>
                 <div className="mt-4 flex justify-center">
                     <button
                         onClick={onLogin}

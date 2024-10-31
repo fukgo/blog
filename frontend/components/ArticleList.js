@@ -2,14 +2,12 @@
 import PostCard from './PostCard';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import {getAllArticleUrl} from "@/api_list";
 
-const ArticleList = ({  page, limit, setPage, setLimit }) => {
+const ArticleList = ({ url, page, limit, setPage, setLimit }) => {
     const [posts, setPosts] = useState([]); // 存储文章数据
     const [loading, setLoading] = useState(true); // 加载状态
     const [error, setError] = useState(null); // 错误状态
     const [totalPages, setTotalPages] = useState(1); // 总页数
-    const url = getAllArticleUrl(); // 获取文章列表的 URL
 
     // 数据获取函数
     const fetchArticles = async () => {
@@ -19,14 +17,13 @@ const ArticleList = ({  page, limit, setPage, setLimit }) => {
             // 从 sessionStorage 获取 token
             const token = sessionStorage.getItem('authToken');
 
-            const response = await axios.get(url, {
+            const response = await axios.get(url(), {
                 params: {
                     page: page,
                     limit: limit,
                 },
                 headers: {
-                    // 在请求头中添加 token
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`, // 在请求头中添加 token
                 },
                 withCredentials: true
             });
@@ -56,12 +53,17 @@ const ArticleList = ({  page, limit, setPage, setLimit }) => {
         }
     };
 
+    // 空状态或错误状态的展示
     if (loading) {
-        return <div>Loading...</div>; // 显示加载状态
+        return <div className="text-center text-blue-600">加载中...</div>;
     }
 
     if (error) {
-        return <div>Error: {error.message}</div>; // 显示错误信息
+        return <div className="text-center text-red-500">出错了: {error.message}</div>;
+    }
+
+    if (posts.length === 0) {
+        return <div className="text-center text-gray-500">暂无文章显示</div>;
     }
 
     return (
@@ -71,16 +73,26 @@ const ArticleList = ({  page, limit, setPage, setLimit }) => {
                     <PostCard key={post.id} post={post} />
                 ))}
             </div>
+
             {/* 分页按钮 */}
             <div className="flex justify-between mt-4">
-                <button onClick={handlePrevPage} disabled={page === 1} className="bg-gray-500 text-white px-4 py-2 rounded">
+                <button
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                    className={`px-4 py-2 rounded ${page === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-500 hover:bg-gray-600 text-white'}`}
+                >
                     上一页
                 </button>
-                <button onClick={handleNextPage} disabled={page === totalPages} className="bg-gray-500 text-white px-4 py-2 rounded">
+                <button
+                    onClick={handleNextPage}
+                    disabled={page === totalPages}
+                    className={`px-4 py-2 rounded ${page === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-500 hover:bg-gray-600 text-white'}`}
+                >
                     下一页
                 </button>
             </div>
-            <p className="mt-2">当前页: {page} / {totalPages}</p>
+
+            <p className="text-center text-gray-600 mt-2">当前页: {page} / {totalPages}</p>
         </div>
     );
 };

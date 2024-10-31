@@ -32,3 +32,5 @@ axum_static = "1.7.1"
 cookie = "0.18.1"
 uuid = { version = "1.0", features = ["v4"] }
 tower-cookies = "0.10.0"
+ninja = "0.0.1"
+tera = "1.20.0"

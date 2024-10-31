@@ -1,34 +1,34 @@
-use std::env;
-use std::sync::Arc;
+use crate::model::*;
 use anyhow::{Context, Ok};
 use axum::body::Body;
 use axum::extract::Request;
-use axum::Router;
 use axum::routing::{get, get_service, post};
-use dotenv::dotenv;
-use sqlx::mysql::MySqlPoolOptions;
-use tower_http::cors::{Any, CorsLayer};
-use tower_http::trace::{DefaultOnResponse, TraceLayer};
-use tracing_subscriber::{self, fmt::format};
-use tower_http::services::ServeDir;
-use tracing::{info, error,debug,trace};
-use lazy_static::lazy_static;
-use crate::model::*;
+use axum::Router;
 use axum_csrf::{CsrfConfig, CsrfLayer, CsrfToken};
+use dotenv::dotenv;
+use lazy_static::lazy_static;
+use rand::seq::index;
+use sqlx::mysql::MySqlPoolOptions;
+use std::env;
+use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::ServeDir;
+use tower_http::trace::{DefaultOnResponse, TraceLayer};
+use tracing::{debug, error, info, trace};
+use tracing_subscriber::{self, fmt::format};
 pub mod auth;
-pub mod handle;
 pub mod error;
-pub mod model;
+pub mod handle;
 pub mod middleware;
-use reqwest::header::HeaderValue;
-use reqwest::header::HeaderName;
-use reqwest::{Method, StatusCode};
+pub mod model;
 use handle::*;
+use reqwest::header::HeaderName;
+use reqwest::header::HeaderValue;
+use reqwest::{Method, StatusCode};
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 
-
 #[tokio::main]
-async fn main(){
+async fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .init();
@@ -38,38 +38,33 @@ async fn main(){
     run().await.unwrap();
 }
 
-async fn run()->anyhow::Result<()>{
+async fn run() -> anyhow::Result<()> {
     let config = CsrfConfig::default();
-    let database_url = env::var("DATABASE_URL").with_context(||"database not set")?;
+    let database_url = env::var("DATABASE_URL").with_context(|| "database not set")?;
     let addr = env::var("BIND_ADDR").unwrap_or("0.0.0.0:8001".to_string());
 
     // let static_files_service = ServeDir::new("static");
 
     // 创建 MySQL 连接池
     let pool = MySqlPoolOptions::new()
-        .max_connections(3)
+        .max_connections(5)
         .connect(&database_url)
         .await?;
     //配置cors
     let cors = CorsLayer::new()
-    .allow_origin(
-        vec![
+        .allow_origin(vec![
             HeaderValue::from_static("http://127.0.0.1:8001"),
             HeaderValue::from_static("http://localhost:8001"),
             HeaderValue::from_static("http://127.0.0.1:3000"),
             HeaderValue::from_static("http://localhost:3000"),
-        ]
-
-    )
-    .allow_methods([Method::GET, Method::POST,Method::DELETE])
-    .allow_credentials(true)
-    .allow_headers(vec![
-        HeaderName::from_static("authorization"),
-        HeaderName::from_static("content-type")
+        ])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE])
+        .allow_credentials(true)
+        .allow_headers(vec![
+            HeaderName::from_static("authorization"),
+            HeaderName::from_static("content-type"),
         ]);
-    let app_state = Arc::new(AppState {
-        pool,
-    });
+    let app_state = Arc::new(AppState { pool });
     info!("Server is running on: {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
@@ -80,8 +75,8 @@ async fn run()->anyhow::Result<()>{
         // .route("/register",post(register))
         .route("/auth/login", get(login_form).post(handle_login_form))
         .route("/auth/register", get(register_form).post(handle_register_form))
-        .route("/",get(auth_token))
-
+        .route("/auth/token",get(auth_token))
+        .route("/",get(index))
         .layer(cors)
         .layer(CookieManagerLayer::new())
         .layer(TraceLayer::new_for_http()
@@ -90,10 +85,7 @@ async fn run()->anyhow::Result<()>{
             })
             .on_response(DefaultOnResponse::new()))
         .with_state(app_state.clone());
-    axum::serve(listener,app).await?;
+
+    axum::serve(listener, app).await?;
     Ok(())
-
-
 }
-
-

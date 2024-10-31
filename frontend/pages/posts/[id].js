@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { marked } from 'marked';
 import Link from 'next/link';
-import { FaUser, FaEnvelope } from 'react-icons/fa';
-import hljs from 'highlight.js'; // 导入代码高亮库
-import 'highlight.js/styles/github.css'; // 高亮样式
-import 'github-markdown-css'; // GitHub Markdown 样式
-import '@/api_list'
-import {getArticleDetailUrl, getUserUrl} from "@/api_list";
+import { FaUser } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { getArticleDetailUrl, getUserUrl, getArticleTagsUrl } from '@/api_list';
+import CommentSection from '@/components/CommentSection';
+import useAuth from '@/components/useAuth';
 
 const PostDetail = ({ initialArticle, initialUser }) => {
     const router = useRouter();
@@ -17,117 +16,165 @@ const PostDetail = ({ initialArticle, initialUser }) => {
     const [user, setUser] = useState(initialUser);
     const [loading, setLoading] = useState(!initialArticle || !initialUser);
     const [error, setError] = useState(null);
+    const [headings, setHeadings] = useState([]);
+    const [tags, setTags] = useState([]);
+    const [tagLoading, setTagLoading] = useState(true);
+    const [isAuthenticated, userLoading] = useAuth();
+    const [sessionUser, setSessionUser] = useState(null); // 使用数组解构语法
+    const [userDetailId, setUserDetailId] = useState(null); // 用户ID
+    useEffect(() => {
+        const getSessionUser = async () => {
+            if (isAuthenticated) {
+                const storedUser = JSON.parse(sessionStorage.getItem('user'));
+                if (storedUser && storedUser.user) {
+                    setSessionUser(storedUser.user);
+                } else {
+                    console.error('User information not found');
+                }
+            }
+        };
+        getSessionUser();
+    }, [isAuthenticated]);
 
     useEffect(() => {
-        // 配置 marked 以支持 GitHub 风格的 Markdown 和代码高亮
-        marked.setOptions({
-            gfm: true,
-            breaks: true,
-            highlight: (code, lang) => {
-                const language = lang || 'plaintext'; // 默认语言为 plaintext
-                return hljs.highlight(language, code).value; // 返回高亮后的代码
-            },
-        });
-
-        const fetchArticle = async () => {
+        const fetchArticleData = async () => {
             if (!id) return;
 
             try {
-                const articleResponse = await fetch(getArticleDetailUrl(id), {
-                    credentials: 'include',
-                });
-                if (!articleResponse.ok) throw new Error('Unable to fetch article information');
+                const articleResponse = await fetch(getArticleDetailUrl(id), { credentials: 'include' });
+                if (!articleResponse.ok) throw new Error('无法获取文章');
                 const articleData = await articleResponse.json();
                 setArticle(articleData);
 
-                const userResponse = await fetch(getUserUrl(articleData.user_id), {
-                    credentials: 'include',
-                });
-                if (!userResponse.ok) throw new Error('Unable to fetch user information');
+                const userResponse = await fetch(getUserUrl(articleData.user_detail_id), { credentials: 'include' });
+                if (!userResponse.ok) throw new Error('无法获取用户信息');
                 const userData = await userResponse.json();
                 setUser(userData);
             } catch (error) {
-                setError(error.message); // 捕获并设置错误信息
+                setError(error.message);
             } finally {
-                setLoading(false); // 完成加载
+                setLoading(false);
             }
         };
 
-        // 仅在 id 存在时请求数据
-        if (id) {
-            fetchArticle();
-        }
-    }, [id]); // 依赖 id
+        if (id) fetchArticleData();
+    }, [id]);
 
-    // 加载状态和错误处理
-    if (loading) return <p>Loading...</p>;
+    useEffect(() => {
+        const fetchArticleTags = async () => {
+            if (!article || !article.id) return;
+
+            try {
+                const response = await fetch(getArticleTagsUrl(article.id), { credentials: 'include' });
+                if (!response.ok) throw new Error('无法获取标签');
+                const tagsData = await response.json();
+                setTags(tagsData);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setTagLoading(false);
+            }
+        };
+
+        if (article && article.id) fetchArticleTags();
+    }, [article]);
+
+    if (loading) return <p>加载中...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl">
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                {/* 文章标题和作者信息 */}
-                <div className="p-6 border-b flex justify-between items-start">
+        <div className="container mx-auto p-6 flex flex-col lg:flex-row max-w-7xl">
+            {/* Main Article Section */}
+            <div className="w-full lg:w-3/4 p-6 bg-white shadow-md rounded-lg">
+                <div className="border-b mb-4 pb-4 flex justify-between items-center">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">{article.title}</h1>
-                        <h3 className="text-gray-600 text-sm mb-4 italic">{article.digest || 'No digest available'}</h3>
-                    </div>
-                    <div className="ml-6 text-right">
-                        <h3 className="text-2xl font-semibold mb-4">Author Information</h3>
-                        <div className="flex items-center mb-2">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-4">{article.title}</h1>
+                        <div className="flex items-center text-gray-800">
                             <FaUser className="mr-2 text-gray-600" />
-                            <p className="text-gray-800">
-                                <strong>Username:</strong> {user.username}
-                            </p>
-                        </div>
-                        <div className="flex items-center">
-                            <FaEnvelope className="mr-2 text-gray-600" />
-                            <p className="text-gray-800">
-                                <strong>Email:</strong> {user.email}
-                            </p>
+                            <strong>昵称:</strong>
+                            <Link href={`/users/${user.id}`} className="ml-2 text-blue-500 hover:underline">
+                                {user.nickname}
+                            </Link>
                         </div>
                     </div>
+                    {/* Edit Button for Author */}
+                    {sessionUser && sessionUser.user_detail_id === article.user_detail_id && (
+                        <Link href={`/posts/update/${article.id}`}>
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded">编辑</button>
+                        </Link>
+                    )}
                 </div>
 
-                {/* 文章内容 */}
-                <div className="p-6 bg-gray-50"> {/* 设置浅色背景 */}
-                    {article.content ? (
-                        <div className="markdown-body prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: marked(article.content) }} />
+                {/* Article Tags */}
+                <div className="flex flex-wrap gap-2 mt-4 mb-6">
+                    {tagLoading ? (
+                        <p className="text-gray-500">标签加载中...</p>
+                    ) : tags.length > 0 ? (
+                        tags.map(tag => (
+                            <span
+                                key={tag.id}
+                                className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold"
+                            >
+                                #{tag.tag}
+                            </span>
+                        ))
                     ) : (
-                        <p className="text-gray-500">This article has no content.</p>
+                        <p className="text-gray-500">暂无标签</p>
                     )}
+                </div>
+
+                {/* Article Digest */}
+                <div className="p-4 border-b mb-4 bg-gray-50 text-gray-700">
+                    <p>{article.digest}</p>
+                </div>
+
+                {/* Featured Badge */}
+                {article.feature && (
+                    <div className="p-4 mb-4 bg-yellow-100 text-yellow-800 font-semibold rounded">
+                        精选文章
+                    </div>
+                )}
+
+                {/* Article Content */}
+                <div className="markdown-body border rounded p-4 bg-gray-50 text-gray-800 mb-6">
+                    {article.content ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
+                    ) : (
+                        <p className="text-gray-500">此文章没有内容。</p>
+                    )}
+                </div>
+
+                {/* Comments Section */}
+                <div className="border-t pt-6">
+                    <h2 className="text-2xl font-semibold mb-4">评论区</h2>
+                    <CommentSection articleId={article.id} />
                 </div>
             </div>
 
-            {/* 返回文章列表按钮 */}
-            <Link href="/" className="mt-6 inline-block text-blue-600 hover:underline text-lg">
-                ← Back to Posts
-            </Link>
+            {/* Sidebar Navigation */}
+            <aside className="w-full lg:w-1/4 lg:pl-6 lg:sticky lg:top-20 mt-8 lg:mt-0">
+                <div className="bg-white p-4 shadow-md rounded-lg mb-6">
+                    <h2 className="text-lg font-semibold mb-4">文章导航</h2>
+                    <ul className="text-gray-600">
+                        {headings.length > 0 ? (
+                            headings.map(({ text, slug, level }) => (
+                                <li key={slug} className={`ml-${(level - 1) * 4}`}>
+                                    <a href={`#${slug}`} className="hover:underline">
+                                        {text}
+                                    </a>
+                                </li>
+                            ))
+                        ) : (
+                            <li>暂无导航标题</li>
+                        )}
+                    </ul>
+                </div>
+                <Link href="/" className="block text-blue-600 hover:underline text-lg mt-6 text-center">
+                    ← 返回文章列表
+                </Link>
+            </aside>
         </div>
     );
-};
-
-// 获取初始数据
-PostDetail.getInitialProps = async ({ query }) => {
-    const { id } = query;
-
-    try {
-        const articleResponse = await fetch(getArticleDetailUrl(id), {
-            credentials: 'include',
-        });
-        if (!articleResponse.ok) throw new Error('Unable to fetch article information');
-        const articleData = await articleResponse.json();
-
-        const userResponse = await fetch(getUserUrl(articleData.user_id), {
-            credentials: 'include',
-        });
-        if (!userResponse.ok) throw new Error('Unable to fetch user information');
-        const userData = await userResponse.json();
-
-        return { initialArticle: articleData, initialUser: userData };
-    } catch (error) {
-        return { initialArticle: null, initialUser: null }; // 出现错误时返回 null
-    }
 };
 
 export default PostDetail;
