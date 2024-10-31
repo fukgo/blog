@@ -2,19 +2,17 @@ use crate::auth::{generate_token, verify_token};
 use crate::error::Err;
 use crate::model::*;
 use crate::AppState;
-use ninja::Ninja;
 use axum::body::Body;
 use axum::extract::State;
 use axum::http::{Request, StatusCode};
 use axum::response::{Html, IntoResponse};
 use axum::{response::Redirect, routing::post, Router};
 use axum::{Form, Json};
-use axum_csrf::{CsrfConfig, CsrfLayer, CsrfToken};
 use std::fs::read_to_string;
 use std::sync::Arc;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 use tracing::{debug, error, info, trace};
-use uuid::Uuid;
+use std::env;
 pub async fn login(
     app_state: State<Arc<AppState>>,
     login_data: Json<LoginRequest>,
@@ -74,15 +72,15 @@ pub async fn register(
     let password_hash = bcrypt::hash(&register_data.password, 10).unwrap();
 
     // 插入新用户数据并获取插入的 ID
-    let result = sqlx::query!(
+    let result = sqlx::query(
         r#"
         INSERT INTO auth_user (username, password, email)
         VALUES (?, ?, ?)
-        "#,
-        register_data.username,
-        password_hash,
-        register_data.email
+        "#
     )
+    .bind(&register_data.username)
+    .bind(&password_hash)
+    .bind(&register_data.email)
     .execute(&app_state.pool)
     .await
     .map_err(|e| {
@@ -144,7 +142,9 @@ pub async fn auth_token(
 }
 
 pub async fn register_form(cookies: Cookies) -> impl IntoResponse {
-    let mut html = read_to_string("templates/register.html").unwrap();
+    let template_path = env::var("TEMPLATE_PATH").unwrap_or_else(|_| "templates/**/*".to_string());
+    let register_template_path = format!("{}/register.html", template_path);
+    let mut html = read_to_string(register_template_path).unwrap();
     let csrf_token = uuid::Uuid::new_v4().to_string();
     cookies.add(Cookie::new("csrf_token", csrf_token.clone()));
 
@@ -154,7 +154,9 @@ pub async fn register_form(cookies: Cookies) -> impl IntoResponse {
     Html(html)
 }
 pub async fn login_form(cookies: Cookies) -> impl IntoResponse {
-    let mut html = read_to_string("templates/login.html").unwrap();
+    let template_path = env::var("TEMPLATE_PATH").unwrap_or_else(|_| "templates/**/*".to_string());
+    let login_template_path = format!("{}/login.html", template_path);
+    let mut html = read_to_string(login_template_path).unwrap();
     let csrf_token = uuid::Uuid::new_v4().to_string();
     cookies.add(Cookie::new("csrf_token", csrf_token.clone()));
     // debug!("authenticity_token: {}，{}", authenticity_token,token.authenticity_token().unwrap());
@@ -264,15 +266,16 @@ pub async fn handle_register_form(
 
             let password_hash = bcrypt::hash(&register_data.password, 10).unwrap();
 
-            let result = sqlx::query!(
+            let result = sqlx::query(
                 r#"
         INSERT INTO auth_user (username, password, email)
         VALUES (?, ?, ?)
         "#,
-                register_data.username,
-                password_hash,
-                register_data.email
+  
             )
+            .bind(register_data.username)
+            .bind(password_hash)
+            .bind(register_data.email)
             .execute(&app_state.pool)
             .await
             .map_err(|e| {
@@ -335,7 +338,10 @@ pub async fn index(app_state: State<Arc<AppState>>) -> Result<impl IntoResponse,
     }
 
     // 初始化 Tera
-    let tera = Tera::new("templates/**/*").unwrap();
+    let template_path = env::var("TEMPLATE_PATH").unwrap_or_else(|_| "templates/**/*".to_string());
+    let tera_path = format!("{}/**/*", template_path);
+        // 使用环境变量设置模板路径
+    let tera = Tera::new(&tera_path).unwrap();
     
     // 创建上下文并插入数据
     let mut context = Context::new();
