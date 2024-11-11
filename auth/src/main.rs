@@ -6,13 +6,10 @@ use axum::routing::{get, get_service, post};
 use axum::Router;
 use axum_csrf::{CsrfConfig, CsrfLayer, CsrfToken};
 use dotenv::dotenv;
-use lazy_static::lazy_static;
-use rand::seq::index;
 use sqlx::mysql::MySqlPoolOptions;
 use std::env;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
-use tower_http::services::ServeDir;
 use tower_http::trace::{DefaultOnResponse, TraceLayer};
 use tracing::{debug, error, info, trace};
 use tracing_subscriber::{self, fmt::format};
@@ -26,15 +23,16 @@ use reqwest::header::HeaderName;
 use reqwest::header::HeaderValue;
 use reqwest::{Method, StatusCode};
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
-
+use tracing_subscriber::EnvFilter;
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::WARN)
-        .init();
-
+    // tracing_subscriber::fmt()
+    //     .with_max_level(tracing::Level::WARN)
+    //     .init();
     dotenv().ok(); // 加载 .env 文件
-
+    //// 从环境变量中读取日志级别，默认级别为 INFO
+    let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
+    tracing_subscriber::fmt().with_env_filter(env_filter).init();
     run().await.unwrap();
 }
 

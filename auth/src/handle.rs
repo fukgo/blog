@@ -287,7 +287,8 @@ pub async fn handle_register_form(
                 msg: "register success".to_string(),
             };
 
-            Ok((StatusCode::OK, Json(res)))
+
+            Ok(Redirect::to("/auth/login"))
         }
     } else {
         error!("CSRF token not found in cookies");
